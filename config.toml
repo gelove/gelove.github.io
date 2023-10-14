@@ -1,0 +1,35 @@
+# The URL the site will be built for
+base_url = "https://gelove.github.io"
+
+# The site title and description; used in feeds by default.
+title = "Allen"
+description = "技术闲谈"
+
+# Whether to automatically compile all Sass files in the sass directory
+compile_sass = false
+
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = false
+
+# When set to "true", a feed is automatically generated.
+generate_feed = true
+
+taxonomies = [
+    # You can enable/disable RSS
+    # { name = "categories", feed = true },
+    { name = "tags", feed = true },
+]
+
+[markdown]
+# Whether to do syntax highlighting
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
+highlight_code = true
+
+[extra]
+# Put all your custom variables here
+menu_links = [
+    { url = "$BASE_URL/", name = "首页" },
+    { url = "$BASE_URL/posts", name = "笔记" },
+    { url = "$BASE_URL/contact", name = "联系" },
+    { url = "https://notes.allens.top", name = "友链" },
+]
