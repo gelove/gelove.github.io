@@ -1,6 +1,6 @@
 +++
 title = "使用 Zola 和 Github Pages 搭建网站"
-date = 2022-09-05T21:06:09-07:00
+date = 2022-09-05T21:05:00+08:00
 type = "post"
 description = "使用 Zola 作为静态网站生成器搭建个人网站和博客，并使用 Github Actions 部署到 Github Pages。"
 [taxonomies]

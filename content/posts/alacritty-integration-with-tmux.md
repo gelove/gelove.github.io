@@ -1,6 +1,6 @@
 +++
 title = "集成 Alacritty 和 Tmux 打造超级终端"
-date = 2022-09-26T21:56:09-07:00
+date = 2022-09-26T21:56:00+08:00
 type = "post"
 description = "将 alacritty 和 tmux 深度集成到自己的工作流之中，整合各自的优点，打造出一个顺心应手、高效率、可定制的超级终端。"
 [taxonomies]
