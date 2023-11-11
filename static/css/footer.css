@@ -4,6 +4,29 @@ footer {
   border-top: 1px solid var(--text-color);
   padding: 1rem 0;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  /* justify-content: space-between; */
   align-items: center;
+}
+
+.footer-top {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-bottom {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.beian-logo{
+  display: inline;
+  margin: 0 5px;
+  width: 16px;
 }

@@ -45,27 +45,41 @@
     </header>
     <article>{% block content %} {% endblock %}</article>
     <footer>
-        <div class="social">
-            <ul>
-                <li>
-                    <a href="https://github.com/gelove" title="Github"><i data-feather="github"></i></a>
-                </li>
-                <!-- <li>
-                    <a href="https://twitter.com/geloves" title="Twitter"><i data-feather="twitter"></i></a>
-                </li> -->
-                <li>
-                    <a href="https://www.linkedin.com/in/geloves" title="LinkedIn"><i
-                        data-feather="linkedin"></i></a>
-                </li>
-                    <a href="{{ get_url(path="atom.xml", trailing_slash=false) | safe}}" title="{{config.title}}"><i
-                        data-feather="rss"></i></a>
-                </li>
-            </ul>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ get_url(path="atom.xml", trailing_slash=false) | safe}}" title="{{config.title}}">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © {{ config.title }} {{ now() | date(format="%Y") }}
+            </div>
         </div>
-        <p>
-            © {{ config.title }} {{ now() | date(format="%Y") }}<br>
-            Powered by <a target="_blank" href="https://getzola.org/">Zola</a>
-        </p>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="{{ get_url(path="images/beian.png", trailing_slash=false) | safe }}" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
     </footer>
     <script>
         feather.replace();
