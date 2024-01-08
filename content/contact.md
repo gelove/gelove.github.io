@@ -7,4 +7,4 @@ title =  "联系"
 其他在线身份：
 
 - GitHub: [gelove](https://github.com/gelove)
-- LinkedIn: [Allen](https://www.linkedin.com/in/geloves)
+<!-- - LinkedIn: [Allen](https://www.linkedin.com/in/geloves) -->
