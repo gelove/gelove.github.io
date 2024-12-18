@@ -36,13 +36,13 @@ cd <username>.github.io
 #### macOS
 
 ```sh
-brew insall zola
+brew install zola
 ```
 
 #### Linux
 
 ```sh
-curl -sL https://github.com/getzola/zola/releases/download/v0.17.2/zola-v0.17.2-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
+curl -sL https://github.com/getzola/zola/releases/download/v0.19.2/zola-v0.19.2-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
 ```
 
 ### 使用 Zola
@@ -50,12 +50,12 @@ curl -sL https://github.com/getzola/zola/releases/download/v0.17.2/zola-v0.17.2-
 1. 运行命令 `zola init` 进行初始化。
    zola init 完会创建配置文件 config.toml 和几个文件夹:
 
-   - content/   放所有的文章
-   - sass/      如字面意义放 sass
+   - content/ 放所有的文章
+   - sass/ 如字面意义放 sass
    - templates/ 下面放 Tera 模板，即 Zola 使用的 HTML 模板引擎。
-   - content/   放我们的文章
-   - static/    图片等静态资源
-   - themes/    主题
+   - content/ 放我们的文章
+   - static/ 图片等静态资源
+   - themes/ 主题
 
 2. 根据文档说明进行定制主题、模版。
 3. 补充正文内容。
@@ -63,79 +63,38 @@ curl -sL https://github.com/getzola/zola/releases/download/v0.17.2/zola-v0.17.2-
 
 ### 配置 Github Actions
 
-请到 Github 仓库的 `Settings > Pages` 页面，设置 `Github Pages` 使用 `Github Actions` 进行构建和部署。
-![source](/images/1697204221572.jpg)
+创建 Github Actions 工作流文件 `.github/workflows/deploy.yml`。此工作流程负责构建网站内容并发布到 `gh-pages` 分支。
 
-准备 Github Actions 工作流程文件 `.github/workflows/build.yml`。此工作流程负责构建网站内容并部署到 Github Pages。
+> 注意: 将工作流权限更改为可读写, 以便 GitHub Actions 工作流自动发布内容到 `gh-pages` 分支。
+> 在仓库中, 点击 Settings -> Actions -> General -> Workflow permissions, 选择 `Read and write permissions` 并保存
 
 ```yml
-name: Deploy website to Pages
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: [$default-branch]
+    branches:
+      - main
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow one concurrent deployment
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
-# Default to bash
-defaults:
-  run:
-    shell: bash
-
+name: Build and deploy GH Pages
 jobs:
-  # Build job
   build:
-    runs-on: ubuntu-latest
-    env:
-      ZOLA_VERSION: 0.17.2
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main'
     steps:
-      - name: Install Zola
-        run: |
-          curl -sL https://github.com/getzola/zola/releases/download/v${ZOLA_VERSION}/zola-v${ZOLA_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
       - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Build with Zola
-        run: zola build
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: ./public
-
-  # Deployment job
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/checkout@v4
+      - name: Deploy
+        uses: shalzz/zola-deploy-action@v0.19.2
+        env:
+          # Target branch
+          PAGES_BRANCH: gh-pages
+          BUILD_DIR: .
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 这个工作流程文件执行两项作业：
 
-1. 构建：执行以下四个步骤：
-   1. 下载并安装 Zola。
-   2. `actions/checkout` 操作下载仓库的副本。
-   3. 执行命令 `zola build` 构建页面文件。
-   4. `actions/upload-pages-artifact` 操作将 `./public` 目录打包为构件，并上传。
-2. 部署：`actions/deploy-pages` 操作将构建作业上传的内容部署到 Github Pages。
+1.  `actions/checkout` 下载仓库的副本。
+2.  `zola-deploy-action` 构建页面文件并发布到 `gh-pages` 分支。
 
 ### 推送代码
 
@@ -145,26 +104,21 @@ git commit -m "Initial commit"
 git push -u origin main
 ```
 
-第一次提交代码，会触发运行 Github Actions 的工作流程。等待工作流程运行完成之后，网页会部署到 Github Pages。你的网站可以访问了：`https://<username>.github.io`。
+第一次提交代码，会触发运行 Github Actions 的工作流程。等待工作流程运行完成之后，网页代码会发布到 `gh-pages` 分支。
 
 ### 部署
 
-因为我们的 Github Actions 触发机制使用的是 `workflow_dispatch`，除了第一次自动触发，以后都是手动触发。有两种方式可以手动触发工作流程。
+进入 Github 仓库的 `Settings > Pages` 页面，在 `Build and deployment` 下选择 `gh-pages` 分支进行构建和部署。
+![source](/images/1734496288602.jpg)
 
-- 访问仓库的 `Actions` 页面，当有新的代码提交后，可以选择运行工作流程：
-  ![actions workflow dispatch](/images/1697204263196.jpg)
-
-- 执行 Github CLI （需要安装）命令：
-
-```sh
-gh workflow run build.yml
-```
+等一会你的网站就可以访问了：`https://<username>.github.io`。
 
 ### 自定义域名
 
 参考[文档](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)配置自定义域名的 DNS 记录。
 
-再到 Github 仓库的 `Settings > Pages` 页面，设置自定义域名。
+进入 Github 仓库的 `Settings > Pages` 页面，设置自定义域名。
+这将创建一个提交，将 CNAME 文件直接添加到分支的根目录下。
 ![custom domain](/images/1697204305581.jpg)
 比如说我的自定义域名 `allens.top` 设置成功后，即可访问：[`https://allens.top`](https://allens.top)。
 
@@ -181,5 +135,4 @@ gh workflow run build.yml
 ### 参考资料
 
 - [Zola Docs](https://www.getzola.org/documentation/)
-- [GitHub Pages now uses Actions by default](https://github.blog/2022-08-10-github-pages-now-uses-actions-by-default/)
 - [GitHub Actions starter workflows](https://github.com/actions/starter-workflows/tree/main/pages)
