@@ -2,7 +2,7 @@
 
 ```sh
 # 下载并安装 Zola
-curl -sL https://github.com/getzola/zola/releases/download/v0.18.0/zola-v0.18.0-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
+curl -sL https://github.com/getzola/zola/releases/download/v0.19.2/zola-v0.19.2-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /usr/local/bin
 ```
 
 ```sh
