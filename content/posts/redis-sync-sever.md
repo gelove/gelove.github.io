@@ -7,8 +7,6 @@ description = "Rust构建同步Redis服务器"
 tags = ["rust", "redis"]
 +++
 
-# 构建同步 Redis 服务器
-
 Redis 是一种数据结构服务器，通常用作内存数据存储。Redis 客户端和服务端使用 Redis 序列化协议(REdis Serialization Protocol, RESP)，这是一种简单的基于流的有状态协议。
 
 RESP 支持各种消息，包括简单字符串、整数、数组及批量字符串等。RESP 中的消息以`\r\n`字节序列结束。例如，从服务器到客户端到客户端的成功消息被编码并发发送为 `+OK\r\n`。 `+`表示成功回复。该命令以 `\r\n`结尾。若指令查询失败，Redis 服务器将回复 `-Nil\r\n`。
