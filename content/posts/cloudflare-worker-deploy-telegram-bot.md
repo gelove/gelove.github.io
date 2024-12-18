@@ -1,7 +1,7 @@
 +++
-title = "使用 Cloudflare Worker 部署 Telegram Bot"
+title = "通过 Cloudflare Worker 部署 Telegram Bot"
 date = 2024-12-18T14:00:00+08:00
-description = "使用 Cloudflare Worker 部署 Telegram Bot"
+description = "通过 Cloudflare Worker 部署 Telegram Bot"
 [taxonomies]
 tags = ["cloudflare", "Worker", "telegram", "bot"]
 +++
@@ -13,7 +13,7 @@ tags = ["cloudflare", "Worker", "telegram", "bot"]
 3. 按照提示设置 bot 的名称和用户名。
 4. 完成后，您将收到一个 API Token，请妥善保存。
 
-## 2 使用 Cloudflare Worker 部署 Bot
+## 2 通过 Cloudflare Worker 部署 Bot
 
 ### 2.1 代码示例
 
