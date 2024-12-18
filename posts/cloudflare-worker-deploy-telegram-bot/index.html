@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="技术闲谈" />
+<meta name="keywords" content="rust, tauri, dart, flutter, go, python, javascript, typescript, web3" />
+<link rel="icon" href="/images/favicon.ico">
+
+<title>艾伦的空间 | 通过 Cloudflare Worker 部署 Telegram Bot</title>
+<meta property="og:title" content="艾伦的空间 | 通过 Cloudflare Worker 部署 Telegram Bot" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/cloudflare-worker-deploy-telegram-bot/" />
+<meta property="og:description" content="通过 Cloudflare Worker 部署 Telegram Bot" />
+<meta property="og:image" content="" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="通过 Cloudflare Worker 部署 Telegram Bot" />
+<meta name="twitter:description" content="通过 Cloudflare Worker 部署 Telegram Bot" />
+<meta property="twitter:image" content="" />
+
+
+    <link rel="alternate" type="application/rss+xml" title="艾伦的空间" href="/atom.xml">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"
+        integrity="sha512-7x3zila4t2qNycrtZ31HO0NnJr8kg2VI67YLoRSyi9hGhRN66FHYWr7Axa9Y1J9tGYHVBPqIjSE1ogHrJTz51g=="
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <header>
+        <a class="site-name" href="/">
+          <h1>艾伦的空间</h1>
+        </a>
+        <div class="site-description">
+            <p></p>
+        </div>
+        <nav>
+            <div class="links">
+                
+                
+                <a 
+                    href="/ ">首页
+                </a>
+                
+                
+                <a 
+                    href="/posts ">笔记
+                </a>
+                
+                
+                <a 
+                    href="/contact ">联系
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+    <article>
+
+<section class="post">
+    <div class="post-header">
+        <div class="meta">
+            <div class="date">
+                <span class="day">18</span>
+                <span class="rest">2024年12月</span>
+            </div>
+        </div>
+
+        <div class="matter">
+            <h1 class="title">通过 Cloudflare Worker 部署 Telegram Bot</h1>
+        </div>
+    </div>
+    <article>
+        <h2 id="1-chuang-jian-telegram-bot">1 创建 Telegram Bot</h2>
+<ol>
+<li>在 Telegram 中搜索 “@BotFather”。</li>
+<li>向 BotFather 发送 <code>/newbot</code> 命令。</li>
+<li>按照提示设置 bot 的名称和用户名。</li>
+<li>完成后，您将收到一个 API Token，请妥善保存。</li>
+</ol>
+<h2 id="2-tong-guo-cloudflare-worker-bu-shu-bot">2 通过 Cloudflare Worker 部署 Bot</h2>
+<h3 id="2-1-dai-ma-shi-li">2.1 代码示例</h3>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#8fa1b3;">addEventListener</span><span>(&#39;</span><span style="color:#a3be8c;">fetch</span><span>&#39;, </span><span style="color:#bf616a;">event </span><span style="color:#b48ead;">=&gt; </span><span>{
+</span><span>  event.</span><span style="color:#8fa1b3;">respondWith</span><span>(</span><span style="color:#8fa1b3;">handleRequest</span><span>(event.</span><span style="color:#bf616a;">request</span><span>));
+</span><span>});
+</span><span>
+</span><span style="color:#b48ead;">async function </span><span style="color:#8fa1b3;">handleRequest</span><span>(</span><span style="color:#bf616a;">request</span><span>) {
+</span><span>  </span><span style="color:#b48ead;">if </span><span>(</span><span style="color:#bf616a;">request</span><span>.method === &#39;</span><span style="color:#a3be8c;">POST</span><span>&#39;) {
+</span><span>    </span><span style="color:#b48ead;">try </span><span>{
+</span><span>      </span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">body </span><span>= </span><span style="color:#b48ead;">await </span><span style="color:#bf616a;">request</span><span>.</span><span style="color:#8fa1b3;">json</span><span>();
+</span><span>      </span><span style="color:#ebcb8b;">console</span><span>.</span><span style="color:#96b5b4;">log</span><span>(</span><span style="color:#bf616a;">body</span><span>);
+</span><span>      </span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">TOKEN </span><span>= </span><span style="color:#bf616a;">globalThis</span><span>.</span><span style="color:#bf616a;">TELE_BOT_TOKEN</span><span>;
+</span><span>      </span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">url </span><span>= `</span><span style="color:#a3be8c;">https://api.telegram.org/bot${</span><span style="color:#bf616a;">TOKEN</span><span style="color:#a3be8c;">}/sendMessage</span><span>`;
+</span><span>
+</span><span>      </span><span style="color:#b48ead;">const </span><span style="color:#bf616a;">response </span><span>= </span><span style="color:#b48ead;">await </span><span style="color:#8fa1b3;">fetch</span><span>(</span><span style="color:#bf616a;">url</span><span>, {
+</span><span>        method: &#39;</span><span style="color:#a3be8c;">POST</span><span>&#39;,
+</span><span>        headers: { &#39;</span><span style="color:#a3be8c;">Content-Type</span><span>&#39;: &#39;</span><span style="color:#a3be8c;">application/json</span><span>&#39; },
+</span><span>        body: JSON.</span><span style="color:#96b5b4;">stringify</span><span>({
+</span><span>          chat_id: </span><span style="color:#bf616a;">body</span><span>.</span><span style="color:#bf616a;">message</span><span>.</span><span style="color:#bf616a;">chat</span><span>.id,
+</span><span>          text: `</span><span style="color:#a3be8c;">You said: ${</span><span style="color:#bf616a;">body</span><span style="color:#a3be8c;">.</span><span style="color:#bf616a;">message</span><span style="color:#a3be8c;">.text}</span><span>`,
+</span><span>        }),
+</span><span>      });
+</span><span>
+</span><span>      </span><span style="color:#b48ead;">return </span><span>new Response(&#39;</span><span style="color:#a3be8c;">OK</span><span>&#39;, { status: </span><span style="color:#d08770;">200 </span><span>});
+</span><span>    } </span><span style="color:#b48ead;">catch </span><span>(</span><span style="color:#bf616a;">error</span><span>) {
+</span><span>      </span><span style="color:#b48ead;">return </span><span>new Response(&#39;</span><span style="color:#a3be8c;">Error processing request</span><span>&#39;, { status: </span><span style="color:#d08770;">500 </span><span>});
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style="color:#b48ead;">return </span><span>new Response(&#39;</span><span style="color:#a3be8c;">Invalid request</span><span>&#39;, { status: </span><span style="color:#d08770;">400 </span><span>});
+</span><span>}
+</span></code></pre>
+<h3 id="2-2-bu-shu-bu-zou">2.2 部署步骤</h3>
+<ol>
+<li>登录 Cloudflare 账户，创建新的 Worker。</li>
+<li>将上述代码粘贴到 Worker 编辑器中。</li>
+<li>在 Worker 的设置中添加环境变量 <code>TELE_BOT_TOKEN</code>，值为您的 Telegram Bot API Token。</li>
+<li>部署 Worker。</li>
+</ol>
+<h3 id="2-3-she-zhi-webhook">2.3 设置 Webhook</h3>
+<p>部署完成后，需要设置 Webhook 以便 Telegram 服务器能够向您的 Worker 发送更新。</p>
+<p>使用以下命令设置 Webhook（请在打开代理或国外服务器上运行，以避免访问不了的错误）：</p>
+<pre data-lang="shell" style="background-color:#2b303b;color:#c0c5ce;" class="language-shell "><code class="language-shell" data-lang="shell"><span>export TELE_BOT_TOKEN=your-bot-token
+</span><span>curl -F &quot;url=https://your-worker-subdomain.workers.dev&quot; https://api.telegram.org/bot$TELE_BOT_TOKEN/setWebhook
+</span></code></pre>
+<p>替换 <code>your-worker-subdomain</code> 为实际值。</p>
+<p>验证 Webhook 设置：</p>
+<pre data-lang="shell" style="background-color:#2b303b;color:#c0c5ce;" class="language-shell "><code class="language-shell" data-lang="shell"><span>curl https://api.telegram.org/bot$TELE_BOT_TOKEN/getWebhookInfo
+</span></code></pre>
+<h2 id="3-cloudflare-worker-shi-yong-zhu-yi-shi-xiang">3 Cloudflare Worker 使用注意事项</h2>
+<ol>
+<li><strong>环境变量访问</strong>：使用 <code>globalThis.</code> 前缀访问环境变量，例如：</li>
+</ol>
+<pre data-lang="js" style="background-color:#2b303b;color:#c0c5ce;" class="language-js "><code class="language-js" data-lang="js"><span style="color:#b48ead;">const </span><span style="color:#bf616a;">TOKEN </span><span>= </span><span style="color:#bf616a;">globalThis</span><span>.</span><span style="color:#bf616a;">TELE_BOT_TOKEN</span><span>;
+</span></code></pre>
+<ol start="2">
+<li><strong>代码保存</strong>：有时保存可能不会立即生效，需要重新进入并粘贴代码。</li>
+<li><strong>调试</strong>：可以切换到 HTTP 功能，输入测试数据进行调试。</li>
+<li><strong>部署</strong>：只有在预览模式下才能点击"部署"按钮。HTTP 模式下无法部署。</li>
+</ol>
+<p>通过以上步骤，您就可以成功创建并部署一个基于 Cloudflare Worker 的 Telegram Bot。</p>
+
+    </article>
+</section>
+</article>
+    <footer>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/atom.xml" title="艾伦的空间">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © 艾伦的空间 2024
+            </div>
+        </div>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="/images/beian.png" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
+    </footer>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>

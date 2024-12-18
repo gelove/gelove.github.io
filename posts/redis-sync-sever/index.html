@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="技术闲谈" />
+<meta name="keywords" content="rust, tauri, dart, flutter, go, python, javascript, typescript, web3" />
+<link rel="icon" href="/images/favicon.ico">
+
+<title>艾伦的空间 | Rust构建同步Redis服务器</title>
+<meta property="og:title" content="艾伦的空间 | Rust构建同步Redis服务器" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/redis-sync-sever/" />
+<meta property="og:description" content="Rust构建同步Redis服务器" />
+<meta property="og:image" content="" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Rust构建同步Redis服务器" />
+<meta name="twitter:description" content="Rust构建同步Redis服务器" />
+<meta property="twitter:image" content="" />
+
+
+    <link rel="alternate" type="application/rss+xml" title="艾伦的空间" href="/atom.xml">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"
+        integrity="sha512-7x3zila4t2qNycrtZ31HO0NnJr8kg2VI67YLoRSyi9hGhRN66FHYWr7Axa9Y1J9tGYHVBPqIjSE1ogHrJTz51g=="
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <header>
+        <a class="site-name" href="/">
+          <h1>艾伦的空间</h1>
+        </a>
+        <div class="site-description">
+            <p></p>
+        </div>
+        <nav>
+            <div class="links">
+                
+                
+                <a 
+                    href="/ ">首页
+                </a>
+                
+                
+                <a 
+                    href="/posts ">笔记
+                </a>
+                
+                
+                <a 
+                    href="/contact ">联系
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+    <article>
+
+<section class="post">
+    <div class="post-header">
+        <div class="meta">
+            <div class="date">
+                <span class="day">06</span>
+                <span class="rest">2022年01月</span>
+            </div>
+        </div>
+
+        <div class="matter">
+            <h1 class="title">Rust构建同步Redis服务器</h1>
+        </div>
+    </div>
+    <article>
+        <p>Redis 是一种数据结构服务器，通常用作内存数据存储。Redis 客户端和服务端使用 Redis 序列化协议(REdis Serialization Protocol, RESP)，这是一种简单的基于流的有状态协议。</p>
+<p>RESP 支持各种消息，包括简单字符串、整数、数组及批量字符串等。RESP 中的消息以<code>\r\n</code>字节序列结束。例如，从服务器到客户端到客户端的成功消息被编码并发发送为 <code>+OK\r\n</code>。 <code>+</code>表示成功回复。该命令以 <code>\r\n</code>结尾。若指令查询失败，Redis 服务器将回复 <code>-Nil\r\n</code>。</p>
+<p> </p>
+<h2 id="gou-jian-tong-bu-redis-fu-wu-qi">构建同步 Redis 服务器</h2>
+<p> </p>
+<h3 id="xiu-gai-pei-zhi-xiang">修改配置项</h3>
+<pre data-lang="toml" style="background-color:#2b303b;color:#c0c5ce;" class="language-toml "><code class="language-toml" data-lang="toml"><span style="color:#65737e;"># rudis_sync/Cargo.toml
+</span><span>
+</span><span>[dependencies]
+</span><span style="color:#bf616a;">lazy_static </span><span>= &quot;</span><span style="color:#a3be8c;">1.2.0</span><span>&quot;
+</span><span style="color:#bf616a;">resp </span><span>= { </span><span style="color:#bf616a;">git </span><span>= &quot;</span><span style="color:#a3be8c;">https://github.com/creativcoder/resp</span><span>&quot;}
+</span><span>
+</span></code></pre>
+<p> </p>
+<ul>
+<li>lazy_static：将使用它来存储我们的内存数据库。</li>
+<li>resp: resp 第三方库，用它解析来自客户端的字节流。</li>
+</ul>
+<p> </p>
+<h3 id="ju-ti-shi-xian">具体实现</h3>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#65737e;">// rudis_sync/src/main.rs
+</span><span>
+</span><span style="color:#b48ead;">use </span><span>lazy_static::lazy_static;
+</span><span style="color:#b48ead;">use </span><span>resp::Decoder;
+</span><span style="color:#b48ead;">use </span><span>std::collections::HashMap;
+</span><span style="color:#b48ead;">use </span><span>std::env;
+</span><span style="color:#b48ead;">use </span><span>std::io::{BufReader, Write};
+</span><span style="color:#b48ead;">use </span><span>std::net::Shutdown;
+</span><span style="color:#b48ead;">use </span><span>std::net::{TcpListener, TcpStream};
+</span><span style="color:#b48ead;">use </span><span>std::sync::Mutex;
+</span><span style="color:#b48ead;">use </span><span>std::thread;
+</span><span style="color:#65737e;">// use std::time::Duration;
+</span><span>
+</span><span style="color:#b48ead;">mod </span><span>commands;
+</span><span style="color:#b48ead;">use crate</span><span>::commands::process_client_request;
+</span><span>
+</span><span style="color:#b48ead;">type </span><span>STORE = Mutex&lt;HashMap&lt;String, String&gt;&gt;;
+</span><span>
+</span><span style="color:#65737e;">// 可实现延迟初始化 static 常量
+</span><span>lazy_static! {
+</span><span>    </span><span style="color:#b48ead;">static ref </span><span style="color:#d08770;">RUDIS_DB</span><span>: </span><span style="color:#d08770;">STORE </span><span>= Mutex::new(HashMap::new());
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// handle_client在stream变量中接收客户端TcpStream 套接字
+</span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">handle_client</span><span>(</span><span style="color:#bf616a;">stream</span><span>: TcpStream) {
+</span><span>    </span><span style="color:#65737e;">// 将客户端 stream包装到BufReader中
+</span><span>    </span><span style="color:#b48ead;">let mut</span><span> stream = BufReader::new(stream);
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// 作为可变引用传递给resp软件包的Decoder::new方法
+</span><span>    </span><span style="color:#b48ead;">let</span><span> decoder = Decoder::new(&amp;</span><span style="color:#b48ead;">mut</span><span> stream).</span><span style="color:#96b5b4;">decode</span><span>();
+</span><span>    </span><span style="color:#b48ead;">match</span><span> decoder {
+</span><span>        Ok(v) =&gt; {
+</span><span>            </span><span style="color:#65737e;">// 解码成功，调用process_client_request
+</span><span>            </span><span style="color:#b48ead;">let</span><span> reply = </span><span style="color:#96b5b4;">process_client_request</span><span>(v);
+</span><span>
+</span><span>            </span><span style="color:#65737e;">// 通过在客户端stream上调用write_all将reply写入客户端
+</span><span>            stream.</span><span style="color:#96b5b4;">get_mut</span><span>().</span><span style="color:#96b5b4;">write_all</span><span>(&amp;reply).</span><span style="color:#96b5b4;">unwrap</span><span>();
+</span><span>        }
+</span><span>        Err(e) =&gt; {
+</span><span>            </span><span style="color:#65737e;">// 解码失败，Shutdown::Both值关闭客户端套接字连接的读取和写入部分
+</span><span>            println!(&quot;</span><span style="color:#a3be8c;">Invalid command: </span><span style="color:#d08770;">{:?}</span><span>&quot;, e);
+</span><span>            </span><span style="color:#b48ead;">let </span><span>_ = stream.</span><span style="color:#96b5b4;">get_mut</span><span>().</span><span style="color:#96b5b4;">shutdown</span><span>(Shutdown::Both);
+</span><span>        }
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">fn </span><span style="color:#8fa1b3;">main</span><span>() {
+</span><span>    </span><span style="color:#b48ead;">let</span><span> addr = env::args()
+</span><span>                .</span><span style="color:#96b5b4;">skip</span><span>(</span><span style="color:#d08770;">1</span><span>)
+</span><span>                .</span><span style="color:#96b5b4;">next</span><span>()
+</span><span>                .</span><span style="color:#96b5b4;">unwrap_or</span><span>(&quot;</span><span style="color:#a3be8c;">127.0.0.1:6378</span><span>&quot;.</span><span style="color:#96b5b4;">to_owned</span><span>());
+</span><span>    </span><span style="color:#b48ead;">let</span><span> listener = TcpListener::bind(&amp;addr).</span><span style="color:#96b5b4;">unwrap</span><span>();
+</span><span>    println!(&quot;</span><span style="color:#a3be8c;">rudis_sync listening on </span><span style="color:#d08770;">{}</span><span style="color:#a3be8c;"> ...</span><span>&quot;, addr);
+</span><span>
+</span><span>    </span><span style="color:#65737e;">// listener上调用incoming方法，然后返回新客户端连接迭代器
+</span><span>    </span><span style="color:#b48ead;">for</span><span> stream in listener.</span><span style="color:#96b5b4;">incoming</span><span>() {
+</span><span>        </span><span style="color:#b48ead;">let</span><span> stream = stream.</span><span style="color:#96b5b4;">unwrap</span><span>();
+</span><span>        println!(&quot;</span><span style="color:#a3be8c;">New connection from: </span><span style="color:#d08770;">{:?}</span><span>&quot;, stream);
+</span><span>        </span><span style="color:#65737e;">// thread::sleep(Duration::from_millis(3000))
+</span><span>
+</span><span>        </span><span style="color:#65737e;">// 每当建立的客户端连接时，生成一个新线程从主线程转移handle_client调用，从而允许主线程接受其它客户端连接
+</span><span>        thread::spawn(|| </span><span style="color:#96b5b4;">handle_client</span><span>(stream));
+</span><span>    }
+</span><span>}
+</span></code></pre>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#65737e;">// rudis_sync/src/commands.rs
+</span><span>
+</span><span style="color:#b48ead;">use crate</span><span>::</span><span style="color:#d08770;">RUDIS_DB</span><span>;
+</span><span style="color:#b48ead;">use </span><span>resp::Value;
+</span><span>
+</span><span style="color:#65737e;">// process_client_request 已经获取解码后的Value，并将其与已解析的查询进行匹配
+</span><span style="color:#b48ead;">pub fn </span><span style="color:#8fa1b3;">process_client_request</span><span>(</span><span style="color:#bf616a;">decoded_msg</span><span>: Value) -&gt; Vec&lt;</span><span style="color:#b48ead;">u8</span><span>&gt; {
+</span><span>    </span><span style="color:#b48ead;">let</span><span> reply = </span><span style="color:#b48ead;">if let </span><span>Value::Array(v) = decoded_msg {
+</span><span>        </span><span style="color:#b48ead;">match </span><span>&amp;v[</span><span style="color:#d08770;">0</span><span>] {
+</span><span>            </span><span style="color:#65737e;">// Value::Bulk 将命令包装成字符串
+</span><span>            Value::Bulk(</span><span style="color:#b48ead;">ref</span><span> s) </span><span style="color:#b48ead;">if</span><span> s == &quot;</span><span style="color:#a3be8c;">GET</span><span>&quot; || s == &quot;</span><span style="color:#a3be8c;">get</span><span>&quot; =&gt; </span><span style="color:#96b5b4;">handle_get</span><span>(v),
+</span><span>            Value::Bulk(</span><span style="color:#b48ead;">ref</span><span> s) </span><span style="color:#b48ead;">if</span><span> s == &quot;</span><span style="color:#a3be8c;">SET</span><span>&quot; || s == &quot;</span><span style="color:#a3be8c;">set</span><span>&quot; =&gt; </span><span style="color:#96b5b4;">handle_set</span><span>(v),
+</span><span>            other =&gt; unimplemented!(&quot;</span><span style="color:#a3be8c;">{:?} is not supported as of now</span><span>&quot;, other),
+</span><span>        }
+</span><span>    } </span><span style="color:#b48ead;">else </span><span>{
+</span><span>        Err(Value::Error(&quot;</span><span style="color:#a3be8c;">Invalid Command</span><span>&quot;.</span><span style="color:#96b5b4;">to_string</span><span>()))
+</span><span>    };
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">match</span><span> reply {
+</span><span>        Ok(r) | Err(r) =&gt; r.</span><span style="color:#96b5b4;">encode</span><span>(),
+</span><span>    }
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// handle_get 检查GET命令在查询是否包含相应的key，在查询失败时，现实错误信息
+</span><span style="color:#b48ead;">pub fn </span><span style="color:#8fa1b3;">handle_get</span><span>(</span><span style="color:#bf616a;">v</span><span>: Vec&lt;Value&gt;) -&gt; Result&lt;Value, Value&gt; {
+</span><span>    </span><span style="color:#b48ead;">let</span><span> v = v.</span><span style="color:#96b5b4;">iter</span><span>().</span><span style="color:#96b5b4;">skip</span><span>(</span><span style="color:#d08770;">1</span><span>).collect::&lt;Vec&lt;_&gt;&gt;();
+</span><span>    </span><span style="color:#b48ead;">if</span><span> v.</span><span style="color:#96b5b4;">is_empty</span><span>() {
+</span><span>        </span><span style="color:#b48ead;">return </span><span>Err(Value::Error(&quot;</span><span style="color:#a3be8c;">Expected 1 argument for GET command</span><span>&quot;.</span><span style="color:#96b5b4;">to_string</span><span>()))
+</span><span>    }
+</span><span>
+</span><span>    </span><span style="color:#b48ead;">let</span><span> db_ref = </span><span style="color:#d08770;">RUDIS_DB</span><span>.</span><span style="color:#96b5b4;">lock</span><span>().</span><span style="color:#96b5b4;">unwrap</span><span>();
+</span><span>    </span><span style="color:#b48ead;">let</span><span> reply = </span><span style="color:#b48ead;">if let </span><span>Value::Bulk(</span><span style="color:#b48ead;">ref</span><span> s) = &amp;v[</span><span style="color:#d08770;">0</span><span>] {
+</span><span>        db_ref.</span><span style="color:#96b5b4;">get</span><span>(s).</span><span style="color:#96b5b4;">map</span><span>(|</span><span style="color:#bf616a;">e</span><span>|
+</span><span>    Value::Bulk(e.</span><span style="color:#96b5b4;">to_string</span><span>())).</span><span style="color:#96b5b4;">unwrap_or</span><span>(Value::Null)
+</span><span>    } </span><span style="color:#b48ead;">else </span><span>{
+</span><span>        Value::Null
+</span><span>    };
+</span><span>    Ok(reply)
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// handle_set 将&amp;v[0]和&amp;v[1]向匹配的键和值插入RUDIS_DB中
+</span><span style="color:#b48ead;">pub fn </span><span style="color:#8fa1b3;">handle_set</span><span>(</span><span style="color:#bf616a;">v</span><span>: Vec&lt;Value&gt;) -&gt; Result&lt;Value, Value&gt; {
+</span><span>    </span><span style="color:#b48ead;">let</span><span> v = v.</span><span style="color:#96b5b4;">iter</span><span>().</span><span style="color:#96b5b4;">skip</span><span>(</span><span style="color:#d08770;">1</span><span>).collect::&lt;Vec&lt;_&gt;&gt;();
+</span><span>    </span><span style="color:#b48ead;">if</span><span> v.</span><span style="color:#96b5b4;">is_empty</span><span>() || v.</span><span style="color:#96b5b4;">len</span><span>() &lt; </span><span style="color:#d08770;">2 </span><span>{
+</span><span>        </span><span style="color:#b48ead;">return </span><span>Err(Value::Error(&quot;</span><span style="color:#a3be8c;">Expected 2 arguments for SET command</span><span>&quot;.</span><span style="color:#96b5b4;">to_string</span><span>()))
+</span><span>    }
+</span><span>    </span><span style="color:#b48ead;">match </span><span>(&amp;v[</span><span style="color:#d08770;">0</span><span>], &amp;v[</span><span style="color:#d08770;">1</span><span>]) {
+</span><span>        (Value::Bulk(k), Value::Bulk(v)) =&gt; {
+</span><span>            </span><span style="color:#b48ead;">let </span><span>_ = </span><span style="color:#d08770;">RUDIS_DB
+</span><span>                    .</span><span style="color:#96b5b4;">lock</span><span>()
+</span><span>                    .</span><span style="color:#96b5b4;">unwrap</span><span>()
+</span><span>                    .</span><span style="color:#96b5b4;">insert</span><span>(k.</span><span style="color:#96b5b4;">to_string</span><span>(), v.</span><span style="color:#96b5b4;">to_string</span><span>());
+</span><span>        }
+</span><span>        _ =&gt; unimplemented!(&quot;</span><span style="color:#a3be8c;">SET not implemented for {:?}</span><span>&quot;, v),
+</span><span>    }
+</span><span>    Ok(Value::String(&quot;</span><span style="color:#a3be8c;">Ok</span><span>&quot;.</span><span style="color:#96b5b4;">to_string</span><span>()))
+</span><span>}
+</span></code></pre>
+<p> </p>
+<h3 id="yun-xing-redis">运行 Redis</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">root@8d75790f92f5:~/rs/rudis_sync/src#</span><span> cargo r &amp;
+</span><span style="color:#bf616a;">[1]</span><span> 611
+</span><span style="color:#bf616a;">root@8d75790f92f5:~/rs/rudis_sync/src#</span><span>     Finished dev </span><span style="color:#b48ead;">[</span><span>unoptimized + debuginfo</span><span style="color:#b48ead;">]</span><span> target(s) </span><span style="color:#bf616a;">in</span><span> 0.06s
+</span><span>     </span><span style="color:#bf616a;">Running </span><span>`</span><span style="color:#bf616a;">/root/rs/rudis_sync/target/debug/rudis_sync</span><span>`
+</span><span style="color:#bf616a;">rudis_sync</span><span> listening on 127.0.0.1:6378 ...
+</span></code></pre>
+<p> </p>
+<ul>
+<li>连接 Rudis 服务器</li>
+</ul>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">root@8d75790f92f5:~/rs/rudis_sync/src#</span><span> redis-cli</span><span style="color:#bf616a;"> -p</span><span> 6378
+</span><span style="color:#bf616a;">New</span><span> connection from: TcpStream { addr: 127.0.0.1:6378, peer: 127.0.0.1:59186, fd: 4 }
+</span><span style="color:#bf616a;">127.0.0.1:6378</span><span>&gt; set k v
+</span><span style="color:#bf616a;">New</span><span> connection from: TcpStream { addr: 127.0.0.1:6378, peer: 127.0.0.1:59188, fd: 5 }
+</span><span style="color:#bf616a;">Ok
+</span><span style="color:#bf616a;">127.0.0.1:6378</span><span>&gt; get k
+</span><span style="color:#bf616a;">New</span><span> connection from: TcpStream { addr: 127.0.0.1:6378, peer: 127.0.0.1:59190, fd: 4 }
+</span><span>&quot;</span><span style="color:#a3be8c;">v</span><span>&quot;
+</span></code></pre>
+
+    </article>
+</section>
+</article>
+    <footer>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/atom.xml" title="艾伦的空间">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © 艾伦的空间 2024
+            </div>
+        </div>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="/images/beian.png" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
+    </footer>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>

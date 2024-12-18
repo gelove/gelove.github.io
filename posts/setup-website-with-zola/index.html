@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="技术闲谈" />
+<meta name="keywords" content="rust, tauri, dart, flutter, go, python, javascript, typescript, web3" />
+<link rel="icon" href="/images/favicon.ico">
+
+<title>艾伦的空间 | 使用 Zola 和 Github Pages 搭建网站</title>
+<meta property="og:title" content="艾伦的空间 | 使用 Zola 和 Github Pages 搭建网站" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/setup-website-with-zola/" />
+<meta property="og:description" content="使用 Zola 作为静态网站生成器搭建个人网站和博客，并使用 Github Actions 部署到 Github Pages。" />
+<meta property="og:image" content="" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="使用 Zola 和 Github Pages 搭建网站" />
+<meta name="twitter:description" content="使用 Zola 作为静态网站生成器搭建个人网站和博客，并使用 Github Actions 部署到 Github Pages。" />
+<meta property="twitter:image" content="" />
+
+
+    <link rel="alternate" type="application/rss+xml" title="艾伦的空间" href="/atom.xml">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"
+        integrity="sha512-7x3zila4t2qNycrtZ31HO0NnJr8kg2VI67YLoRSyi9hGhRN66FHYWr7Axa9Y1J9tGYHVBPqIjSE1ogHrJTz51g=="
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <header>
+        <a class="site-name" href="/">
+          <h1>艾伦的空间</h1>
+        </a>
+        <div class="site-description">
+            <p></p>
+        </div>
+        <nav>
+            <div class="links">
+                
+                
+                <a 
+                    href="/ ">首页
+                </a>
+                
+                
+                <a 
+                    href="/posts ">笔记
+                </a>
+                
+                
+                <a 
+                    href="/contact ">联系
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+    <article>
+
+<section class="post">
+    <div class="post-header">
+        <div class="meta">
+            <div class="date">
+                <span class="day">05</span>
+                <span class="rest">2022年09月</span>
+            </div>
+        </div>
+
+        <div class="matter">
+            <h1 class="title">使用 Zola 和 Github Pages 搭建网站</h1>
+        </div>
+    </div>
+    <article>
+        <p>使用 Zola 作为静态网站生成器搭建个人网站和博客，并使用 Github Actions 部署到 Github Pages。</p>
+<p>Zola 是一个用 Rust 编写的静态网站生成器，使用动态模板将 Markdown 格式的内容转换为静态 HTML 页面。使用 Github Actions 部署到 Github Pages 是 GitHub 上个月刚刚发布的新功能。</p>
+<h3 id="xin-jian-github-cang-ku">新建 Github 仓库</h3>
+<p>首先创建一个名为 <code>&lt;username&gt;.github.io</code> 的仓库：</p>
+<p><img src="/images/1697204176980.jpg" alt="create repository" /></p>
+<p>新建出来的是一个空的仓库，把它 clone 到本地：</p>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">git</span><span> clone https://github.com/&lt;username&gt;/&lt;username&gt;.github.io
+</span></code></pre>
+<p>接下来的所有操作都在这个文件夹内进行：</p>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#96b5b4;">cd </span><span>&lt;username&gt;.github.io
+</span></code></pre>
+<h3 id="an-zhuang-zola">安装 Zola</h3>
+<p>使用以下命令安装 Zola。</p>
+<h4 id="macos">macOS</h4>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">brew</span><span> install zola
+</span></code></pre>
+<h4 id="linux">Linux</h4>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">curl -sL</span><span> https://github.com/getzola/zola/releases/download/v0.19.2/zola-v0.19.2-x86_64-unknown-linux-gnu.tar.gz | </span><span style="color:#bf616a;">tar</span><span> xz</span><span style="color:#bf616a;"> -C</span><span> /usr/local/bin
+</span></code></pre>
+<h3 id="shi-yong-zola">使用 Zola</h3>
+<ol>
+<li>
+<p>运行命令 <code>zola init</code> 进行初始化。
+zola init 完会创建配置文件 config.toml 和几个文件夹:</p>
+<ul>
+<li>content/ 放所有的文章</li>
+<li>sass/ 如字面意义放 sass</li>
+<li>templates/ 下面放 Tera 模板，即 Zola 使用的 HTML 模板引擎。</li>
+<li>content/ 放我们的文章</li>
+<li>static/ 图片等静态资源</li>
+<li>themes/ 主题</li>
+</ul>
+</li>
+<li>
+<p>根据文档说明进行定制主题、模版。</p>
+</li>
+<li>
+<p>补充正文内容。</p>
+</li>
+<li>
+<p>运行命令 <code>zola serve</code> 进行本地预览，在浏览器中打开 <code>http://127.0.0.1:1111</code> 就可以看到网站了。</p>
+</li>
+</ol>
+<h3 id="pei-zhi-github-actions">配置 Github Actions</h3>
+<p>创建 Github Actions 工作流文件 <code>.github/workflows/deploy.yml</code>。此工作流程负责构建网站内容并发布到 <code>gh-pages</code> 分支。</p>
+<blockquote>
+<p>注意: 将工作流权限更改为可读写, 以便 GitHub Actions 工作流自动发布内容到 <code>gh-pages</code> 分支。
+在仓库中, 点击 Settings -&gt; Actions -&gt; General -&gt; Workflow permissions, 选择 <code>Read and write permissions</code> 并保存</p>
+</blockquote>
+<pre data-lang="yml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yml "><code class="language-yml" data-lang="yml"><span style="color:#d08770;">on</span><span>:
+</span><span>  </span><span style="color:#bf616a;">push</span><span>:
+</span><span>    </span><span style="color:#bf616a;">branches</span><span>:
+</span><span>      - </span><span style="color:#a3be8c;">main
+</span><span>
+</span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">Build and deploy GH Pages
+</span><span style="color:#bf616a;">jobs</span><span>:
+</span><span>  </span><span style="color:#bf616a;">build</span><span>:
+</span><span>    </span><span style="color:#bf616a;">runs-on</span><span>: </span><span style="color:#a3be8c;">ubuntu-22.04
+</span><span>    </span><span style="color:#bf616a;">if</span><span>: </span><span style="color:#a3be8c;">github.ref == &#39;refs/heads/main&#39;
+</span><span>    </span><span style="color:#bf616a;">steps</span><span>:
+</span><span>      - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">Checkout
+</span><span>        </span><span style="color:#bf616a;">uses</span><span>: </span><span style="color:#a3be8c;">actions/checkout@v4
+</span><span>      - </span><span style="color:#bf616a;">name</span><span>: </span><span style="color:#a3be8c;">Deploy
+</span><span>        </span><span style="color:#bf616a;">uses</span><span>: </span><span style="color:#a3be8c;">shalzz/zola-deploy-action@v0.19.2
+</span><span>        </span><span style="color:#bf616a;">env</span><span>:
+</span><span>          </span><span style="color:#65737e;"># Target branch
+</span><span>          </span><span style="color:#bf616a;">PAGES_BRANCH</span><span>: </span><span style="color:#a3be8c;">gh-pages
+</span><span>          </span><span style="color:#bf616a;">BUILD_DIR</span><span>: </span><span style="color:#d08770;">.
+</span><span>          </span><span style="color:#bf616a;">GITHUB_TOKEN</span><span>: </span><span style="color:#a3be8c;">${{ secrets.GITHUB_TOKEN }}
+</span></code></pre>
+<p>这个工作流程文件执行两项作业：</p>
+<ol>
+<li><code>actions/checkout</code> 下载仓库的副本。</li>
+<li><code>zola-deploy-action</code> 构建页面文件并发布到 <code>gh-pages</code> 分支。</li>
+</ol>
+<h3 id="tui-song-dai-ma">推送代码</h3>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">git</span><span> add</span><span style="color:#bf616a;"> --all
+</span><span style="color:#bf616a;">git</span><span> commit</span><span style="color:#bf616a;"> -m </span><span>&quot;</span><span style="color:#a3be8c;">Initial commit</span><span>&quot;
+</span><span style="color:#bf616a;">git</span><span> push</span><span style="color:#bf616a;"> -u</span><span> origin main
+</span></code></pre>
+<p>第一次提交代码，会触发运行 Github Actions 的工作流程。等待工作流程运行完成之后，网页代码会发布到 <code>gh-pages</code> 分支。</p>
+<h3 id="bu-shu">部署</h3>
+<p>进入 Github 仓库的 <code>Settings &gt; Pages</code> 页面，在 <code>Build and deployment</code> 下选择 <code>gh-pages</code> 分支进行构建和部署。
+<img src="/images/1734496288602.jpg" alt="source" /></p>
+<p>等一会你的网站就可以访问了：<code>https://&lt;username&gt;.github.io</code>。</p>
+<h3 id="zi-ding-yi-yu-ming">自定义域名</h3>
+<p>参考<a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site">文档</a>配置自定义域名的 DNS 记录。</p>
+<p>进入 Github 仓库的 <code>Settings &gt; Pages</code> 页面，设置自定义域名。
+比如说我的自定义域名 <code>www.allens.top</code> 设置成功后，即可访问：<a href="https://www.allens.top"><code>https://www.allens.top</code></a>。
+<img src="/images/1697204305581.jpg" alt="custom domain" /></p>
+<p>这将创建一个提交，将 CNAME 文件直接添加到分支的根目录下。</p>
+<blockquote>
+<p>每次更新时都会重新创建 <code>gh-pages</code>分支，CNAME 文件也会消失，导致域名无法正常解析。
+所以需要在添加域名解析后，将 CNAME 文件添加到本地仓库主分支。zola 需要将 CNAME 添加到 static 目录下，以便构建时将其放在公共文件夹的根目录。</p>
+</blockquote>
+<h3 id="zong-jie">总结</h3>
+<p>我的网站完全按照以上步骤搭建，请访问：<a href="https://github.com/gelove/gelove.github.io">gelove/gelove.github.io</a> 查看源代码。</p>
+<p>这次我的网站搭建过程，也是一个很好的学习实践。我学习到了：</p>
+<ul>
+<li>Zola</li>
+<li>Github Pages</li>
+<li>Github Actions</li>
+</ul>
+<h3 id="can-kao-zi-liao">参考资料</h3>
+<ul>
+<li><a href="https://www.getzola.org/documentation/">Zola Docs</a></li>
+<li><a href="https://github.com/actions/starter-workflows/tree/main/pages">GitHub Actions starter workflows</a></li>
+</ul>
+
+    </article>
+</section>
+</article>
+    <footer>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/atom.xml" title="艾伦的空间">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © 艾伦的空间 2024
+            </div>
+        </div>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="/images/beian.png" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
+    </footer>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>

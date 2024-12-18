@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="技术闲谈" />
+<meta name="keywords" content="rust, tauri, dart, flutter, go, python, javascript, typescript, web3" />
+<link rel="icon" href="/images/favicon.ico">
+
+<title>艾伦的空间 | 集成 Alacritty 和 Tmux 打造超级终端</title>
+<meta property="og:title" content="艾伦的空间 | 集成 Alacritty 和 Tmux 打造超级终端" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/alacritty-integration-with-tmux/" />
+<meta property="og:description" content="将 alacritty 和 tmux 深度集成到自己的工作流之中，整合各自的优点，打造出一个顺心应手、高效率、可定制的超级终端。" />
+<meta property="og:image" content="" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="集成 Alacritty 和 Tmux 打造超级终端" />
+<meta name="twitter:description" content="将 alacritty 和 tmux 深度集成到自己的工作流之中，整合各自的优点，打造出一个顺心应手、高效率、可定制的超级终端。" />
+<meta property="twitter:image" content="" />
+
+
+    <link rel="alternate" type="application/rss+xml" title="艾伦的空间" href="/atom.xml">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"
+        integrity="sha512-7x3zila4t2qNycrtZ31HO0NnJr8kg2VI67YLoRSyi9hGhRN66FHYWr7Axa9Y1J9tGYHVBPqIjSE1ogHrJTz51g=="
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <header>
+        <a class="site-name" href="/">
+          <h1>艾伦的空间</h1>
+        </a>
+        <div class="site-description">
+            <p></p>
+        </div>
+        <nav>
+            <div class="links">
+                
+                
+                <a 
+                    href="/ ">首页
+                </a>
+                
+                
+                <a 
+                    href="/posts ">笔记
+                </a>
+                
+                
+                <a 
+                    href="/contact ">联系
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+    <article>
+
+<section class="post">
+    <div class="post-header">
+        <div class="meta">
+            <div class="date">
+                <span class="day">26</span>
+                <span class="rest">2022年09月</span>
+            </div>
+        </div>
+
+        <div class="matter">
+            <h1 class="title">集成 Alacritty 和 Tmux 打造超级终端</h1>
+        </div>
+    </div>
+    <article>
+        <p>Alacritty 是一个使用 OpenGL 的跨平台、GPU 加速的终端仿真器。它专注于性能和简单性，甚至没有标签或窗口拆分等功能。</p>
+<p>Tmux 是一个用于在终端窗口中运行多个终端会话的工具，即终端复用软件（terminal multiplexer）。在 tmux 中可以根据不同的工作任务创建不同的会话，每个会话又可以创建多个窗口来完成不同的工作，每个窗口又可以分割成很多窗格。</p>
+<p>将 alacritty 和 tmux 深度集成到自己的工作流之中，打造出一个顺心应手、高效率、可定制的超级终端。</p>
+<h2 id="te-xing">特性</h2>
+<p>此次深度集成，拥有 alacritty 和 tmux 各自的优点。在 macOS 完全可以代替 iTerm2.app 和 Terminal.app，达到了跨平台、高可用性、统一的超级终端。拥有以下特性：</p>
+<ul>
+<li>快速便捷的、人体工学设计的快捷键。</li>
+<li>简洁实用的、美丽大方的终端主题。</li>
+<li>所有新建的窗格、选项卡使用当前的工作目录。</li>
+<li>本地会话与 SSH 远程会话一视同仁。</li>
+<li>自动重连的 SSH 远程会话。</li>
+<li>灵活的脚本定制化。</li>
+</ul>
+<p>看动图直观感受一下：
+<img src="/images/demo_alacritty_shortcuts.gif" alt="demo alacritty shortcuts" /></p>
+<h2 id="an-zhuang">安装</h2>
+<p>可以通过使用 Linux、BSD、macOS 和 Windows 上的各种包管理器来安装 alacritty 和 tmux，并安装配套所需要的字体和工具。目前已在 macOS 顺畅使用，以下安装步骤以 macOS 为平台。</p>
+<h3 id="alacritty-an-zhuang">Alacritty 安装</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install</span><span style="color:#bf616a;"> --cask</span><span> alacritty
+</span></code></pre>
+<h3 id="tmux-an-zhuang">Tmux 安装</h3>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install tmux
+</span></code></pre>
+<h3 id="zi-ti-an-zhuang">字体安装</h3>
+<p>我选择打过 Nerd Font 字体补丁的 JetBrains Mono 作为终端的默认字体。</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> tap homebrew/cask-fonts
+</span><span style="color:#bf616a;">brew</span><span> install font-jetbrains-mono
+</span><span style="color:#bf616a;">brew</span><span> install font-jetbrains-mono-nerd-font
+</span></code></pre>
+<h3 id="fish-an-zhuang">Fish 安装</h3>
+<p>我选择 fish 作为终端的默认 Shell。（可选，可修改配置使用其他 Shell）</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install fish
+</span></code></pre>
+<h3 id="fzf-an-zhuang">Fzf 安装</h3>
+<p>快速模糊查找。（可选，仅在命令菜单和会话菜单中使用）</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install fzf
+</span></code></pre>
+<h3 id="autossh-an-zhuang">Autossh 安装</h3>
+<p>自动重连的 SSH 客户端。（可选，可以修改配置使用普通的 SSH 客户端）</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">brew</span><span> install autossh
+</span></code></pre>
+<h2 id="pei-zhi">配置</h2>
+<h3 id="alacritty-pei-zhi">Alacritty 配置</h3>
+<p>Alacritty 默认使用的配置文件路径 <code>~/.config/alacritty/alacritty.yml</code>。
+我正在使用的配置文件：<a href="https://github.com/qingshan/dotfiles/blob/main/alacritty/alacritty.yml">alacritty.yml</a>。
+运行下面的命令可以把我的配置文件自动下载并使用：</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">curl -fLo ~</span><span>/.config/alacritty/alacritty.yml</span><span style="color:#bf616a;"> --create-dir </span><span>\
+</span><span>    https://raw.githubusercontent.com/qingshan/dotfiles/main/alacritty/alacritty.yml
+</span></code></pre>
+<h3 id="tmux-pei-zhi">Tmux 配置</h3>
+<p>Tmux 默使用的配置文件路径 <code>~/.tmux.conf</code>
+我正在使用的配置文件：<a href="https://github.com/qingshan/dotfiles/blob/main/.tmux.conf">.tmux.conf</a>。
+运行下面的命令可以把我的配置文件自动下载并使用：</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">curl -fLo ~</span><span>/.tmux.conf \
+</span><span>    https://raw.githubusercontent.com/qingshan/dotfiles/main/.tmux.conf
+</span></code></pre>
+<h3 id="kuai-jie-jian-chong-tu">快捷键冲突</h3>
+<p>绑定的快捷键与 alacritty 和 macOS Screenshot 默认的一些快捷键冲突，我选择调整冲突的这些默认快捷键。</p>
+<ul>
+<li>Alacritty 有两个快捷键冲突：<kbd>Command</kbd> + <kbd>H</kbd> 和 <kbd>Command</kbd> + <kbd>Q</kbd>；</li>
+<li>macOS Screenshot 有多个数字快捷键冲突：<kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>3</kbd> 到 <kbd>6</kbd></li>
+</ul>
+<h4 id="alacritty-kuai-jie-jian-chong-tu">Alacritty 快捷键冲突</h4>
+<p>在 <code>System Preferences</code> / <code>Keyboard</code> / <code>Shortcuts</code> / <code>App Shortcuts</code> 下点击 <code>+</code> 按钮，添加两项菜单主题对应的快捷键：</p>
+<ul>
+<li><code>Hide alacritty</code></li>
+<li><code>Quit alacritty</code></li>
+</ul>
+<p>定义的快捷键只要不是冲突的那两个快捷键都可以，添加后的结果如下：
+<img src="/images/remap_alacritty_shortcuts.png" alt="remap_alacritty_shortcuts" /></p>
+<h4 id="macos-screenshot-kuai-jie-jian-chong-tu">macOS Screenshot 快捷键冲突</h4>
+<p>在 <code>System Preferences</code> / <code>Keyboard</code> / <code>Shortcuts</code> / <code>Screenshots</code> 下取消所有 Screenshot 的快捷键。因为我可以直接运行 Screenshot.app 来截图。</p>
+<h2 id="shi-yong">使用</h2>
+<p>绑定快捷键使用<kbd>Command</kbd>或者<kbd>Command</kbd> + <kbd>Shift</kbd>作为修饰键。部分快捷键与 iTerm2.app 和 Terminal.app 的绑定对应，部分快捷键与我的 i3 的绑定对应。</p>
+<h3 id="ji-ben-cao-zuo">基本操作</h3>
+<p>新建</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>D</kbd> 垂直分割窗格</li>
+<li><kbd>Command</kbd> + <kbd>Return</kbd> 水平分割窗格</li>
+<li><kbd>Command</kbd> + <kbd>T</kbd> 新建选项卡</li>
+</ul>
+<p>关闭</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>W</kbd> 关闭窗格</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd> 关闭选项卡</li>
+<li><kbd>Command</kbd> + <kbd>Q</kbd> 关闭窗口</li>
+</ul>
+<p>访问窗格</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>H</kbd> 或者 <kbd>Command</kbd> + <kbd>Left</kbd> 访问左边的窗格</li>
+<li><kbd>Command</kbd> + <kbd>J</kbd> 或者 <kbd>Command</kbd> + <kbd>Up</kbd> 访问上面的窗格</li>
+<li><kbd>Command</kbd> + <kbd>K</kbd> 或者 <kbd>Command</kbd> + <kbd>Down</kbd> 访问下面的窗格</li>
+<li><kbd>Command</kbd> + <kbd>L</kbd> 或者 <kbd>Command</kbd> + <kbd>Right</kbd> 访问右边的窗格</li>
+</ul>
+<p>访问选项卡</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>1</kbd> 到 <kbd>Command</kbd> + <kbd>9</kbd> - 按数字切换选项卡</li>
+<li><kbd>Command</kbd> + <kbd>b</kbd> 切换到最近一次访问的选项卡</li>
+<li><kbd>Command</kbd> + <kbd>[</kbd> 切换到上一个选项卡</li>
+<li><kbd>Command</kbd> + <kbd>]</kbd> 切换到下一个选项卡</li>
+</ul>
+<p>访问窗口</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>`</kbd>：切换窗口。</li>
+</ul>
+<h3 id="bu-ju-cao-zuo">布局操作</h3>
+<p>调整窗格大小</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> 或者 <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Left</kbd> 向左边的窗格推进</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>J</kbd> 或者 <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Up</kbd> 向上面的窗格推进</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd> 或者 <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Down</kbd> 向下面的窗推进</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> 或者 <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Right</kbd> 向右边的窗格推进</li>
+</ul>
+<p>移动窗格到选项卡</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd> 到 9: 将窗格移动到指定的选项卡中。</li>
+</ul>
+<p>缩放窗格</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>Z</kbd> 缩放当前窗格。</li>
+</ul>
+<p>调整窗格布局</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>：使用预设置的五种布局重新调整窗格。</li>
+</ul>
+<p>修改选项卡名称</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>,</kbd>：修改选项卡名称。</li>
+</ul>
+<h3 id="yan-bo-shu-ru">广播输入</h3>
+<ul>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>：广播输入到当前选项卡的所有窗格。</li>
+</ul>
+<h3 id="tmux-ming-ling">Tmux 命令</h3>
+<ul>
+<li><kbd>Command</kbd> + <kbd>I</kbd>：输入 tmux 命令。</li>
+</ul>
+<h3 id="zi-ti-cao-zuo">字体操作</h3>
+<ul>
+<li><kbd>Command</kbd> + <kbd>+</kbd>：调整更大的字体</li>
+<li><kbd>Command</kbd> + <kbd>-</kbd>：调整更小的字体</li>
+<li><kbd>Command</kbd> + <kbd>0</kbd>：恢复默认大小的字体</li>
+</ul>
+<h3 id="fu-zhi-mo-shi">复制模式</h3>
+<h4 id="vi-fu-zhi-mo-shi">Vi 复制模式</h4>
+<p>查找关键词并进入 Vi 复制模式：</p>
+<ul>
+<li><kbd>Command</kbd> + <kbd>F</kbd>：进入 Vi 复制模式，从上往下的方向查找关键词。</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd>：进入 Vi 复制模式，从下往上的方向查找关键词。</li>
+</ul>
+<p>进入 Vi 复制模式后：</p>
+<ul>
+<li><kbd>v</kbd> 按字选择</li>
+<li><kbd>V</kbd> 按行选择</li>
+<li><kbd>Ctrl</kbd> + <kbd>v</kbd> 按块状选择</li>
+<li><kbd>Esc</kbd> 取消选择</li>
+<li><kbd>A</kbd> 复制选择的文本追加到剪贴板，并退出 Vi 复制模式。</li>
+<li><kbd>D</kbd> 复制当前行到行尾的文本到剪贴板，并退出 Vi 复制模式。</li>
+<li><kbd>y</kbd> 复制选择的文本到剪贴板，并退出 Vi 复制模式。</li>
+<li><kbd>Y</kbd> 复制选择的文本到剪贴板，并保持 Vi 复制模式。</li>
+<li><kbd>q</kbd> 退出 Vi 复制模式。</li>
+<li>还有更多，请查文档。</li>
+</ul>
+<h4 id="shu-biao-mo-shi">鼠标模式</h4>
+<p>使用鼠标选择文本，会自动复制到操作系统的剪贴板。</p>
+<h3 id="jin-jie">进阶</h3>
+<h4 id="kuai-jie-ming-ling">快捷命令</h4>
+<ul>
+<li><kbd>Command</kbd> + <kbd>R</kbd>: 弹出快捷命令菜单，并在当前窗格执行选择的命令。</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>：弹出快捷命令菜单，并在新建垂直分割的窗格执行选择的命令。</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>Retrun</kbd>：弹出快捷命令菜单，并在新建水平分割的窗格执行选择的命令。</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd>：弹出快捷命令菜单，并在新建的选项卡执行选择的命令。</li>
+</ul>
+<p>快捷命令弹出一个窗口，可以选择需要执行的命令。快捷命令列表由自定义一个可执行的脚本文件 <code>tmux-commands</code> 负责提供。脚本文件放到 PATH 路径中。
+可以参考我的脚本文件：<a href="https://raw.githubusercontent.com/qingshan/dotfiles/main/bin/tmux-commands"><code>tmux-commands</code></a>。
+脚本文件内容如下（命令列表内容根据需要自行修改）：</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#65737e;">#!/usr/bin/env bash
+</span><span>
+</span><span>(</span><span style="color:#bf616a;">fzf --reverse --header</span><span> Commands) &lt;&lt;</span><span style="color:#b48ead;">EOF
+</span><span style="color:#a3be8c;">cargo run
+</span><span style="color:#a3be8c;">cargo test
+</span><span style="color:#a3be8c;">ssh lab
+</span><span style="color:#b48ead;">EOF
+</span></code></pre>
+<p>直接执行这个命令确认一下：</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">tmux-commands
+</span></code></pre>
+<p>从快捷命令中选择一个命令，会直接输出打印出来。确认没有问题之后，直接通过上面的快捷键呼叫。</p>
+<h4 id="kuai-jie-hui-hua">快捷会话</h4>
+<ul>
+<li><kbd>Command</kbd> + <kbd>N</kbd>：弹出窗口显示本地会话列表，并在当前窗口切换到选择的会话中。</li>
+<li><kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd>：弹出窗口显示本地会话和远程会话列表，并新建一个窗口切换到选择的会话中。</li>
+</ul>
+<p>快捷会话默认从 tmux 加载会话列表。也可以自定义一个可执行的脚本文件：<code>tmux-sessions</code>，放到 PATH 路径中。
+可以参考我的脚本文件：<a href="https://raw.githubusercontent.com/qingshan/dotfiles/main/bin/tmux-sessions"><code>tmux-sessions</code></a>。</p>
+<p>注意：远程服务器上也应该有 <code>tmux-commands</code> 和 <code>tmux-sessions</code> 两个脚本文件。</p>
+<h3 id="bao-cun-wen-jian">保存文件</h3>
+<ul>
+<li><kbd>Command</kbd> + <kbd>S</kbd>：输出 Vim 保存文件的指令 <code>&lt;ESC&gt;:w&lt;CR&gt;</code>，注意要在 Vim 下使用。</li>
+</ul>
+<p>时不时的保存文件是个好习惯。</p>
+<h3 id="tmux-kuai-jie-jian">Tmux 快捷键</h3>
+<p>因为通常 tmux 绑定的快捷键前缀 <code>Ctrl-a</code> 和 <code>Ctrl-b</code> 经常在 Shell 或者 Vim 中有使用，所以我重新定义的 tmux 的 快捷键前缀为 <kbd>Ctrl</kbd> + <kbd>\</kbd>。
+选择的原因是这个快捷键很少被其他应用程序使用，另外一个原因是在我的集成中没有太多机会使用 tmux 的快捷键，所以选择一个不冲突的快捷键前缀对我来说是最好的选择。</p>
+<h2 id="pei-zhi-shuo-ming">配置说明</h2>
+<h3 id="pei-zhi-zhong-duan-lei-xing">配置终端类型</h3>
+<p>给 alacritty 追加环境变量：</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">env</span><span>:
+</span><span>  </span><span style="color:#bf616a;">TERM</span><span>: </span><span style="color:#a3be8c;">xterm-256color
+</span></code></pre>
+<h3 id="pei-zhi-zi-ti">配置字体</h3>
+<p>指定使用 JetBrains Mono 字体，字体大小设置为 14 点数。</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">font</span><span>:
+</span><span>  </span><span style="color:#bf616a;">normal</span><span>:
+</span><span>    </span><span style="color:#bf616a;">family</span><span>: </span><span style="color:#a3be8c;">JetBrainsMono Nerd Font
+</span><span>    </span><span style="color:#bf616a;">style</span><span>: </span><span style="color:#a3be8c;">Regular
+</span><span>
+</span><span>  </span><span style="color:#bf616a;">bold</span><span>:
+</span><span>    </span><span style="color:#bf616a;">family</span><span>: </span><span style="color:#a3be8c;">JetBrainsMono Nerd Font
+</span><span>    </span><span style="color:#bf616a;">style</span><span>: </span><span style="color:#a3be8c;">Bold
+</span><span>
+</span><span>  </span><span style="color:#bf616a;">italic</span><span>:
+</span><span>    </span><span style="color:#bf616a;">family</span><span>: </span><span style="color:#a3be8c;">JetBrainsMono Nerd Font
+</span><span>    </span><span style="color:#bf616a;">style</span><span>: </span><span style="color:#a3be8c;">Italic
+</span><span>
+</span><span>  </span><span style="color:#bf616a;">bold_italic</span><span>:
+</span><span>    </span><span style="color:#bf616a;">family</span><span>: </span><span style="color:#a3be8c;">JetBrainsMono Nerd Font
+</span><span>    </span><span style="color:#bf616a;">style</span><span>: </span><span style="color:#a3be8c;">Bold Italic
+</span><span>
+</span><span>  </span><span style="color:#bf616a;">size</span><span>: </span><span style="color:#d08770;">14
+</span></code></pre>
+<h3 id="pei-zhi-chuang-kou">配置窗口</h3>
+<p>Alacritty 启动的时候使用全屏模式，但是又不独占一个桌面。窗口不需要任何裱装。</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">window</span><span>:
+</span><span>  </span><span style="color:#bf616a;">startup_mode</span><span>: </span><span style="color:#a3be8c;">SimpleFullscreen
+</span><span>  </span><span style="color:#bf616a;">decorations</span><span>: </span><span style="color:#a3be8c;">none
+</span></code></pre>
+<h3 id="pei-zhi-shell">配置 Shell</h3>
+<p>使用 Fish 作为默认的 Shell。启动的时候总是直接创建或使用名为 <code>main</code> 的 tmux 会话。</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">shell</span><span>:
+</span><span>  </span><span style="color:#bf616a;">program</span><span>: </span><span style="color:#a3be8c;">/usr/local/bin/fish
+</span><span>  </span><span style="color:#bf616a;">args</span><span>:
+</span><span>    - </span><span style="color:#a3be8c;">--login
+</span><span>    - </span><span style="color:#a3be8c;">--command
+</span><span>    - &quot;</span><span style="color:#a3be8c;">tmux new-session -A -D -s main</span><span>&quot;
+</span></code></pre>
+<h3 id="pei-zhi-kuai-jie-jian-ying-she">配置快捷键映射</h3>
+<p>可以映射到 tmux 的绑定：</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span>  - { </span><span style="color:#bf616a;">key</span><span>: </span><span style="color:#a3be8c;">T</span><span>,        </span><span style="color:#bf616a;">mods</span><span>: </span><span style="color:#a3be8c;">Command</span><span>,       </span><span style="color:#bf616a;">chars</span><span>: &quot;</span><span style="color:#96b5b4;">\x1c</span><span style="color:#a3be8c;">c</span><span>&quot;    } </span><span style="color:#65737e;"># new tab with default shell
+</span></code></pre>
+<p>甚至 Vim 指令：</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span>  - { </span><span style="color:#bf616a;">key</span><span>: </span><span style="color:#a3be8c;">S</span><span>,        </span><span style="color:#bf616a;">mods</span><span>: </span><span style="color:#a3be8c;">Command</span><span>,       </span><span style="color:#bf616a;">chars</span><span>: &quot;</span><span style="color:#96b5b4;">\x1b</span><span style="color:#a3be8c;">:w</span><span style="color:#96b5b4;">\x0a</span><span>&quot;} </span><span style="color:#65737e;"># Type &lt;escape&gt;:w&lt;enter&gt; to save vim
+</span></code></pre>
+<p>还可以可以映射运行程序：</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span>  - { </span><span style="color:#bf616a;">key</span><span>: </span><span style="color:#d08770;">N</span><span>,        </span><span style="color:#bf616a;">mods</span><span>: </span><span style="color:#a3be8c;">Command|Shift</span><span>, </span><span style="color:#bf616a;">command</span><span>: { </span><span style="color:#bf616a;">program</span><span>: &quot;</span><span style="color:#a3be8c;">/usr/local/bin/alacritty</span><span>&quot;, </span><span style="color:#bf616a;">args</span><span>: [&quot;</span><span style="color:#a3be8c;">msg</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">create-window</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">-e</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">/usr/local/bin/fish</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">--login</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">--command</span><span>&quot;, &quot;</span><span style="color:#a3be8c;">tmux-sessions --all</span><span>&quot;] } } </span><span style="color:#65737e;"># open session in new window with all sessions menu across servers
+</span></code></pre>
+<h2 id="jiang-li">奖励</h2>
+<h3 id="alacritty-tu-biao">Alacritty 图标</h3>
+<p>Alacritty 默认的图标在 Dock 上与其他应用程序的图标有点格格不入。但是作者不愿意调整图标上，那我只好自己动手调整。
+参考：<a href="https://github.com/alacritty/alacritty/issues/3926">issue:3926</a>
+下载 <a href="https://www.dropbox.com/s/0i4ez0el7paksg3/Alacritty.icns?dl=0">Alacritty.icns</a> 并更新 Alacritty.app</p>
+<h3 id="shu-ru-fa-tui-ge-jian">输入法退格键</h3>
+<p>macOS 下输入法退格键会删除已输入内容的问题：<a href="https://github.com/alacritty/alacritty/issues/1606">issues:1606</a></p>
+<p>官方给出的临时解决方案为：</p>
+<pre data-lang="yaml" style="background-color:#2b303b;color:#c0c5ce;" class="language-yaml "><code class="language-yaml" data-lang="yaml"><span style="color:#bf616a;">key_bindings</span><span>:
+</span><span>  - { </span><span style="color:#bf616a;">key</span><span>: </span><span style="color:#a3be8c;">Back</span><span>,                          </span><span style="color:#bf616a;">action</span><span>:  </span><span style="color:#a3be8c;">ReceiveChar     </span><span>}
+</span></code></pre>
+<h3 id="alt-zu-he-jian-ying-she">Alt 组合键映射</h3>
+<p>所有以 <kbd>Alt</kbd> 和 <kbd>Alt</kbd> + <kbd>Shift</kbd> 为修饰键的按键都映射为 Esc 前缀键码。</p>
+<h3 id="ide-bu-ju">IDE 布局</h3>
+<p>写一个脚本并执行实现自动创建类似 IDE 布局：</p>
+<pre data-lang="bash" style="background-color:#2b303b;color:#c0c5ce;" class="language-bash "><code class="language-bash" data-lang="bash"><span style="color:#bf616a;">tmux</span><span> split-window</span><span style="color:#bf616a;"> -v -p</span><span> 30
+</span><span style="color:#bf616a;">tmux</span><span> send-keys &quot;</span><span style="color:#a3be8c;">echo &#39;run&#39;</span><span>&quot; enter
+</span><span style="color:#bf616a;">tmux</span><span> split-window</span><span style="color:#bf616a;"> -h -p</span><span> 50
+</span><span style="color:#bf616a;">tmux</span><span> send-keys &quot;</span><span style="color:#a3be8c;">echo &#39;preview&#39;</span><span>&quot; enter
+</span></code></pre>
+<h2 id="hou-xu">后续</h2>
+<ul>
+<li><input disabled="" type="checkbox"/>
+加上 tmux-resurrect 插件，断电或者电脑重启后，都可以快速进入基本工作环境。</li>
+<li><input disabled="" type="checkbox"/>
+使用 <code>tmux display-popup</code> 实现快捷方便的弹出窗口。快捷键可以考虑映射 <kbd>Command</kbd> + <kbd>F1</kbd> 到 <kbd>F12</kbd>。</li>
+</ul>
+<h2 id="can-kao-zi-liao">参考资料</h2>
+<ul>
+<li><a href="https://arslan.io/2018/02/05/gpu-accelerated-terminal-alacritty/">Alacritty integration with Tmux</a></li>
+<li><a href="https://www.joshmedeski.com/posts/macos-keyboard-shortcuts-for-tmux">macOS Keyboard Shortcuts for tmux</a></li>
+<li><a href="https://github.com/alacritty/alacritty/blob/master/docs/features.md">Alacritty's documentation</a></li>
+<li><a href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux Manual Pages</a></li>
+</ul>
+
+    </article>
+</section>
+</article>
+    <footer>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/atom.xml" title="艾伦的空间">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © 艾伦的空间 2024
+            </div>
+        </div>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="/images/beian.png" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
+    </footer>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="技术闲谈" />
+<meta name="keywords" content="rust, tauri, dart, flutter, go, python, javascript, typescript, web3" />
+<link rel="icon" href="/images/favicon.ico">
+
+<title>艾伦的空间 | 通过 cloudflare 创建无限数量企业邮箱</title>
+<meta property="og:title" content="艾伦的空间 | 通过 cloudflare 创建无限数量企业邮箱" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/cloudflare-resend-gmail/" />
+<meta property="og:description" content="通过 cloudflare 创建无限数量企业邮箱" />
+<meta property="og:image" content="" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="通过 cloudflare 创建无限数量企业邮箱" />
+<meta name="twitter:description" content="通过 cloudflare 创建无限数量企业邮箱" />
+<meta property="twitter:image" content="" />
+
+
+    <link rel="alternate" type="application/rss+xml" title="艾伦的空间" href="/atom.xml">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"
+        integrity="sha512-7x3zila4t2qNycrtZ31HO0NnJr8kg2VI67YLoRSyi9hGhRN66FHYWr7Axa9Y1J9tGYHVBPqIjSE1ogHrJTz51g=="
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <header>
+        <a class="site-name" href="/">
+          <h1>艾伦的空间</h1>
+        </a>
+        <div class="site-description">
+            <p></p>
+        </div>
+        <nav>
+            <div class="links">
+                
+                
+                <a 
+                    href="/ ">首页
+                </a>
+                
+                
+                <a 
+                    href="/posts ">笔记
+                </a>
+                
+                
+                <a 
+                    href="/contact ">联系
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+    <article>
+
+<section class="post">
+    <div class="post-header">
+        <div class="meta">
+            <div class="date">
+                <span class="day">15</span>
+                <span class="rest">2024年12月</span>
+            </div>
+        </div>
+
+        <div class="matter">
+            <h1 class="title">通过 cloudflare 创建无限数量企业邮箱</h1>
+        </div>
+    </div>
+    <article>
+        <p>如何在互联网大善人 cloudflare 那里白嫖无限数量的企业邮箱，这些邮箱既可以收邮件，也可以发邮件。</p>
+<p>可以用来接收网站验证码，注册账户的时候就可以很方便的注册一大堆小号。 还可以把他们当成临时邮箱，与人通信，避免暴露自己真实的邮箱，保护个人隐私。 Cloudflare 是一家提供 CDN、网络安全、DDos 防御和域名服务的公司，人称互联网大善人、赛博活佛。</p>
+<h2 id="yu-ming">域名</h2>
+<p>使用 Cloudflare 的前提是要有一个域名。关于域名的购买，可以看一下这期视频。</p>
+<p>有了域名以后，我们就把它托管到 Cloudflare 上。我们先登录一下 Cloudflare，没有账号就注册一个。右上角点击添加站点，输入你的域名，</p>
+<p><img src="/images/cloudflare_1.jpg" alt="image" /></p>
+<p>然后点击继续。这里有一些付费的，我们都不要，直接找下面这个免费的，点击继续。</p>
+<p><img src="/images/cloudflare_2.jpg" alt="image" /></p>
+<p>更改 DNS (名称服务器)，找到这两个名称服务器。</p>
+<p><img src="/images/cloudflare_3.jpg" alt="image" /></p>
+<p>我们需要去购买域名的网站更改，把原有的 DNS 地址全部删掉，然后写入之前分配的两个服务器，点击保存。</p>
+<p><img src="/images/cloudflare_4.jpg" alt="image" /></p>
+<p>我们再回到 Cloudflare，点击立即检查，然后点击继续。这里什么都不用动，直接开始使用就可以了。</p>
+<p>左上角点击 Cloudflare 的图标，回到首页，域名这里显示一个绿勾和有效，那就可以开始直接使用了。</p>
+<p><img src="/images/cloudflare_5.jpg" alt="image" /></p>
+<h2 id="shou-you-jian">收邮件</h2>
+<p>我们先点击域名，进来以后选择左侧电子邮件，选择电子邮件路由。</p>
+<p>第一次进来以后，会有一个新手设置，点击取消新手设置，点击启用电子邮件路由。</p>
+<p><img src="/images/cloudflare_6.jpg" alt="image" /></p>
+<p>这里面有 4 个 DNS 值，我们点击添加记录并启用，Cloudflare 就会自动添加上这 4 个 DNS 记录。</p>
+<p><img src="/images/cloudflare_7.jpg" alt="image" /></p>
+<p>我们再点击路由规则，这里有一个 catch-all 地址，我们点击右侧的编辑，</p>
+<p><img src="/images/cloudflare_8.jpg" alt="image" /></p>
+<p>点击发送到电子邮件。这里填写一个自己的电子邮箱，然后点击保存。</p>
+<p><img src="/images/cloudflare_9.jpg" alt="image" /></p>
+<p>保存好以后，这里会出现一个待验证。</p>
+<p><img src="/images/cloudflare_10.jpg" alt="image" /></p>
+<p>Cloudflare 会发送一封验证邮件到这个地址，进入邮箱找到邮件并点击验证链接。刷新一下页面，打上一个绿勾，就配置完成了。</p>
+<p><img src="/images/cloudflare_11.jpg" alt="image" /></p>
+<p><strong>这个配置的意思是所有发送到当前域名下的邮件都会自动转到这个 163 邮箱</strong>。这样就实现了无限多个邮箱可以收邮件。</p>
+<h2 id="fa-you-jian">发邮件</h2>
+<p>使用邮箱发送邮件，使用的服务是**<a href="https://resend.com">resend.com</a>**，这也是一个免费的服务，没有账号请自行注册。</p>
+<p>选择左侧的 API Keys，点击 create API Key，名字可填写你的域名，下面两个保持默认，点击添加。</p>
+<p><img src="/images/cloudflare_12.jpg" alt="image" /></p>
+<p><img src="/images/cloudflare_13.jpg" alt="image" /></p>
+<p>就会获得一个 API Key，把它保存好。这里有一个域名，我们需要把域名也添加到这个网站上，就是之前托管到 Cloudflare 的那个域名。</p>
+<p><img src="/images/cloudflare_14.jpg" alt="image" /></p>
+<p><strong>好，这一步是重点</strong>。这里给了 3 个 DNS 记录，我们需要把这个记录填回 Cloudflare</p>
+<p><img src="/images/cloudflare_15.jpg" alt="image" /></p>
+<p>回到 cloudflare</p>
+<p><img src="/images/cloudflare_16.jpg" alt="image" /></p>
+<p><img src="/images/cloudflare_17.jpg" alt="image" /></p>
+<p>我们回到 resend，有一个按钮 verify DNS records，我们点击一下，检查我们之前的配置是否正确。等校验完，页面标成绿色，那就配置完成了。</p>
+<p><img src="/images/cloudflare_18.jpg" alt="image" /></p>
+<h3 id="shi-yong-python-fa-you-jian">使用 Python 发邮件</h3>
+<pre data-lang="python" style="background-color:#2b303b;color:#c0c5ce;" class="language-python "><code class="language-python" data-lang="python"><span style="color:#65737e;"># 先安装依赖
+</span><span style="color:#65737e;"># pip install resend
+</span><span style="color:#b48ead;">import </span><span>resend
+</span><span style="color:#65737e;"># 这里换成自己的resend API Key
+</span><span>resend.api_key = &quot;</span><span style="color:#a3be8c;">re_xxxxxxxxxxxxxxxxxxxxxxx</span><span>&quot;
+</span><span>
+</span><span>params: resend.Emails.SendParams = {
+</span><span>   </span><span style="color:#65737e;"># 发件人可以是自己域名下的任何一个人
+</span><span>  &quot;</span><span style="color:#a3be8c;">from</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">admin@你的域名</span><span>&quot;,
+</span><span>  &quot;</span><span style="color:#a3be8c;">to</span><span>&quot;: [&quot;</span><span style="color:#a3be8c;">geloves@163.com</span><span>&quot;],
+</span><span>  &quot;</span><span style="color:#a3be8c;">subject</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">hi</span><span>&quot;,
+</span><span>  &quot;</span><span style="color:#a3be8c;">html</span><span>&quot;: &quot;</span><span style="color:#a3be8c;">&lt;strong&gt;it works!&lt;/strong&gt;</span><span>&quot;
+</span><span>}
+</span><span>
+</span><span>email = resend.Emails.</span><span style="color:#bf616a;">send</span><span>(params)
+</span><span style="color:#96b5b4;">print</span><span>(email)
+</span></code></pre>
+<h3 id="shi-yong-curl-fa-you-jian">使用 cURL 发邮件</h3>
+<p>Authorization 换成自己的 resend API Key</p>
+<p>发件人可以是自己域名下的任何一个人</p>
+<pre data-lang="shell" style="background-color:#2b303b;color:#c0c5ce;" class="language-shell "><code class="language-shell" data-lang="shell"><span>export RESEND_API_KEY=&quot;re_xxxxxxxxxxxxxxxxxxxxxxx&quot;
+</span><span>curl -X POST &#39;https://api.resend.com/emails&#39; -H &quot;Authorization: Bearer ${RESEND_API_KEY}&quot; -H &#39;Content-Type: application/json&#39; -d &#39;{&quot;from&quot;: &quot;Admin &lt;admin@你的域名&gt;&quot;,&quot;to&quot;:[&quot;test@163.com&quot;],&quot;subject&quot;:&quot;hi&quot;,&quot;text&quot;: &quot;it works!&quot;}&#39;
+</span></code></pre>
+
+    </article>
+</section>
+</article>
+    <footer>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/atom.xml" title="艾伦的空间">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © 艾伦的空间 2024
+            </div>
+        </div>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="/images/beian.png" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
+    </footer>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>

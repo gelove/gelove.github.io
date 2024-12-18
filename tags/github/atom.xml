@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间 - Github</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/tags/github/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2022-09-05T21:05:00+08:00</updated>
+    <id>/tags/github/atom.xml</id>
+    <entry xml:lang="en">
+        <title>使用 Zola 和 Github Pages 搭建网站</title>
+        <published>2022-09-05T21:05:00+08:00</published>
+        <updated>2022-09-05T21:05:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/setup-website-with-zola/"/>
+        <id>/posts/setup-website-with-zola/</id>
+        
+        <content type="html" xml:base="/posts/setup-website-with-zola/">&lt;p&gt;使用 Zola 作为静态网站生成器搭建个人网站和博客，并使用 Github Actions 部署到 Github Pages。&lt;&#x2F;p&gt;
+&lt;p&gt;Zola 是一个用 Rust 编写的静态网站生成器，使用动态模板将 Markdown 格式的内容转换为静态 HTML 页面。使用 Github Actions 部署到 Github Pages 是 GitHub 上个月刚刚发布的新功能。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;xin-jian-github-cang-ku&quot;&gt;新建 Github 仓库&lt;&#x2F;h3&gt;
+&lt;p&gt;首先创建一个名为 &lt;code&gt;&amp;lt;username&amp;gt;.github.io&lt;&#x2F;code&gt; 的仓库：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;1697204176980.jpg&quot; alt=&quot;create repository&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;新建出来的是一个空的仓库，把它 clone 到本地：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; clone https:&#x2F;&#x2F;github.com&#x2F;&amp;lt;username&amp;gt;&#x2F;&amp;lt;username&amp;gt;.github.io
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;接下来的所有操作都在这个文件夹内进行：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;cd &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;.github.io
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;an-zhuang-zola&quot;&gt;安装 Zola&lt;&#x2F;h3&gt;
+&lt;p&gt;使用以下命令安装 Zola。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;macos&quot;&gt;macOS&lt;&#x2F;h4&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install zola
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h4 id=&quot;linux&quot;&gt;Linux&lt;&#x2F;h4&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -sL&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;zola&#x2F;releases&#x2F;download&#x2F;v0.19.2&#x2F;zola-v0.19.2-x86_64-unknown-linux-gnu.tar.gz | &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tar&lt;&#x2F;span&gt;&lt;span&gt; xz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -C&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;usr&#x2F;local&#x2F;bin
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shi-yong-zola&quot;&gt;使用 Zola&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;运行命令 &lt;code&gt;zola init&lt;&#x2F;code&gt; 进行初始化。
+zola init 完会创建配置文件 config.toml 和几个文件夹:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;content&#x2F; 放所有的文章&lt;&#x2F;li&gt;
+&lt;li&gt;sass&#x2F; 如字面意义放 sass&lt;&#x2F;li&gt;
+&lt;li&gt;templates&#x2F; 下面放 Tera 模板，即 Zola 使用的 HTML 模板引擎。&lt;&#x2F;li&gt;
+&lt;li&gt;content&#x2F; 放我们的文章&lt;&#x2F;li&gt;
+&lt;li&gt;static&#x2F; 图片等静态资源&lt;&#x2F;li&gt;
+&lt;li&gt;themes&#x2F; 主题&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;根据文档说明进行定制主题、模版。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;补充正文内容。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;运行命令 &lt;code&gt;zola serve&lt;&#x2F;code&gt; 进行本地预览，在浏览器中打开 &lt;code&gt;http:&#x2F;&#x2F;127.0.0.1:1111&lt;&#x2F;code&gt; 就可以看到网站了。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;pei-zhi-github-actions&quot;&gt;配置 Github Actions&lt;&#x2F;h3&gt;
+&lt;p&gt;创建 Github Actions 工作流文件 &lt;code&gt;.github&#x2F;workflows&#x2F;deploy.yml&lt;&#x2F;code&gt;。此工作流程负责构建网站内容并发布到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意: 将工作流权限更改为可读写, 以便 GitHub Actions 工作流自动发布内容到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。
+在仓库中, 点击 Settings -&amp;gt; Actions -&amp;gt; General -&amp;gt; Workflow permissions, 选择 &lt;code&gt;Read and write permissions&lt;&#x2F;code&gt; 并保存&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;pre data-lang=&quot;yml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yml &quot;&gt;&lt;code class=&quot;language-yml&quot; data-lang=&quot;yml&quot;&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;on&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;branches&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;main
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Build and deploy GH Pages
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;jobs&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;build&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runs-on&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ubuntu-22.04
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github.ref == &amp;#39;refs&#x2F;heads&#x2F;main&amp;#39;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;steps&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Checkout
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;actions&#x2F;checkout@v4
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deploy
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;shalzz&#x2F;zola-deploy-action@v0.19.2
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Target branch
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;PAGES_BRANCH&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;gh-pages
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;BUILD_DIR&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;GITHUB_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;${{ secrets.GITHUB_TOKEN }}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个工作流程文件执行两项作业：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;actions&#x2F;checkout&lt;&#x2F;code&gt; 下载仓库的副本。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;zola-deploy-action&lt;&#x2F;code&gt; 构建页面文件并发布到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;tui-song-dai-ma&quot;&gt;推送代码&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; add&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --all
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; commit&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -m &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Initial commit&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; push&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -u&lt;&#x2F;span&gt;&lt;span&gt; origin main
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;第一次提交代码，会触发运行 Github Actions 的工作流程。等待工作流程运行完成之后，网页代码会发布到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bu-shu&quot;&gt;部署&lt;&#x2F;h3&gt;
+&lt;p&gt;进入 Github 仓库的 &lt;code&gt;Settings &amp;gt; Pages&lt;&#x2F;code&gt; 页面，在 &lt;code&gt;Build and deployment&lt;&#x2F;code&gt; 下选择 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支进行构建和部署。
+&lt;img src=&quot;&#x2F;images&#x2F;1734496288602.jpg&quot; alt=&quot;source&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;等一会你的网站就可以访问了：&lt;code&gt;https:&#x2F;&#x2F;&amp;lt;username&amp;gt;.github.io&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;zi-ding-yi-yu-ming&quot;&gt;自定义域名&lt;&#x2F;h3&gt;
+&lt;p&gt;参考&lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;pages&#x2F;configuring-a-custom-domain-for-your-github-pages-site&#x2F;managing-a-custom-domain-for-your-github-pages-site&quot;&gt;文档&lt;&#x2F;a&gt;配置自定义域名的 DNS 记录。&lt;&#x2F;p&gt;
+&lt;p&gt;进入 Github 仓库的 &lt;code&gt;Settings &amp;gt; Pages&lt;&#x2F;code&gt; 页面，设置自定义域名。
+比如说我的自定义域名 &lt;code&gt;www.allens.top&lt;&#x2F;code&gt; 设置成功后，即可访问：&lt;a href=&quot;https:&#x2F;&#x2F;www.allens.top&quot;&gt;&lt;code&gt;https:&#x2F;&#x2F;www.allens.top&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;。
+&lt;img src=&quot;&#x2F;images&#x2F;1697204305581.jpg&quot; alt=&quot;custom domain&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;这将创建一个提交，将 CNAME 文件直接添加到分支的根目录下。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;每次更新时都会重新创建 &lt;code&gt;gh-pages&lt;&#x2F;code&gt;分支，CNAME 文件也会消失，导致域名无法正常解析。
+所以需要在添加域名解析后，将 CNAME 文件添加到本地仓库主分支。zola 需要将 CNAME 添加到 static 目录下，以便构建时将其放在公共文件夹的根目录。&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;zong-jie&quot;&gt;总结&lt;&#x2F;h3&gt;
+&lt;p&gt;我的网站完全按照以上步骤搭建，请访问：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;gelove&#x2F;gelove.github.io&quot;&gt;gelove&#x2F;gelove.github.io&lt;&#x2F;a&gt; 查看源代码。&lt;&#x2F;p&gt;
+&lt;p&gt;这次我的网站搭建过程，也是一个很好的学习实践。我学习到了：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Zola&lt;&#x2F;li&gt;
+&lt;li&gt;Github Pages&lt;&#x2F;li&gt;
+&lt;li&gt;Github Actions&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;can-kao-zi-liao&quot;&gt;参考资料&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;&quot;&gt;Zola Docs&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;actions&#x2F;starter-workflows&#x2F;tree&#x2F;main&#x2F;pages&quot;&gt;GitHub Actions starter workflows&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

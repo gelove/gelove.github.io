@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="技术闲谈" />
+<meta name="keywords" content="rust, tauri, dart, flutter, go, python, javascript, typescript, web3" />
+<link rel="icon" href="/images/favicon.ico">
+
+<title>艾伦的空间 | 抖音视频下载与音视频转码工具</title>
+<meta property="og:title" content="艾伦的空间 | 抖音视频下载与音视频转码工具" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/posts/douyin-downloader/" />
+<meta property="og:description" content="抖音视频下载与音视频转码工具" />
+<meta property="og:image" content="" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="抖音视频下载与音视频转码工具" />
+<meta name="twitter:description" content="抖音视频下载与音视频转码工具" />
+<meta property="twitter:image" content="" />
+
+
+    <link rel="alternate" type="application/rss+xml" title="艾伦的空间" href="/atom.xml">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"
+        integrity="sha512-7x3zila4t2qNycrtZ31HO0NnJr8kg2VI67YLoRSyi9hGhRN66FHYWr7Axa9Y1J9tGYHVBPqIjSE1ogHrJTz51g=="
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+    <header>
+        <a class="site-name" href="/">
+          <h1>艾伦的空间</h1>
+        </a>
+        <div class="site-description">
+            <p></p>
+        </div>
+        <nav>
+            <div class="links">
+                
+                
+                <a 
+                    href="/ ">首页
+                </a>
+                
+                
+                <a 
+                    href="/posts ">笔记
+                </a>
+                
+                
+                <a 
+                    href="/contact ">联系
+                </a>
+                
+            </div>
+        </nav>
+    </header>
+    <article>
+
+<section class="post">
+    <div class="post-header">
+        <div class="meta">
+            <div class="date">
+                <span class="day">19</span>
+                <span class="rest">2024年11月</span>
+            </div>
+        </div>
+
+        <div class="matter">
+            <h1 class="title">抖音视频下载与音视频转码工具</h1>
+        </div>
+    </div>
+    <article>
+        <p>Downloader 是一个跨平台的抖音视频下载器，目前支持 macOS 与 windows，并具有音视频转码功能。</p>
+<p><strong>由 Tauri2 + Rust + React + Typescript 开发</strong></p>
+<h2 id="xia-zai-an-zhuang">下载安装</h2>
+<p><a href="https://bin.616161616.xyz/Downloader_1.0.5_aarch64.dmg">macOS-apple</a></p>
+<p><a href="https://bin.616161616.xyz/Downloader_1.0.5_x64.dmg">macOS-intel</a></p>
+<p><a href="https://bin.616161616.xyz/Downloader_1.0.5_x64-setup.exe">windows-x64</a></p>
+<p><strong>MacOS 用户安装程序时出现以下警告是正常的, 请点击取消即可</strong></p>
+<p><img src="/images/downloader_1.png" alt="image-1" /></p>
+<p><strong>然后在设置中允许打开就 OK 了</strong></p>
+<p><img src="/images/downloader_2.png" alt="image-2" /></p>
+<p><strong>然后会再次弹出一次警告</strong></p>
+<p><img src="/images/downloader_3.png" alt="image-3" /></p>
+<p><strong>程序打开报损坏则继续在设置中允许打开或者在终端输入以下命令</strong></p>
+<pre data-lang="sh" style="background-color:#2b303b;color:#c0c5ce;" class="language-sh "><code class="language-sh" data-lang="sh"><span style="color:#bf616a;">xattr -c</span><span> /Applications/Downloader.app
+</span></code></pre>
+<h2 id="cookie-huo-qu-jiao-cheng">Cookie 获取教程</h2>
+<ol>
+<li>打开浏览器，访问 <a href="https://www.douyin.com">抖音</a></li>
+<li>登录抖音账号</li>
+<li>按 <strong><em>F12</em></strong> 打开开发人员工具</li>
+<li>选择 <strong><em>网络</em></strong> 选项卡</li>
+<li>勾选 <strong><em>保留日志</em></strong></li>
+<li>在 <strong><em>筛选器</em></strong> 输入框输入 <strong><em>cookie-name:odin_tt</em></strong></li>
+<li>访问 <strong><em>抖音网页版</em></strong> 中任意用户主页 或者访问 <a href="https://www.douyin.com/follow">关注页</a></li>
+<li>在开发人员工具窗口选择任意一个数据包(如果无数据包，重复步骤 7)</li>
+<li>全选并复制 <strong><em>Cookie</em></strong> 的值</li>
+<li>运行程序 ，根据提示写入 <strong><em>Cookie</em></strong></li>
+</ol>
+<h3 id="jie-tu-shi-li">截图示例</h3>
+<p><img src="/images/downloader_cookie.png" alt="cookie" /></p>
+
+    </article>
+</section>
+</article>
+    <footer>
+        <div class="footer-top">
+            <div class="social">
+                <ul>
+                    <li>
+                        <a href="https://github.com/gelove" title="Github">
+                            <i data-feather="github"></i>
+                        </a>
+                    </li>
+                    <!-- <li>
+                        <a href="https://twitter.com/geloves" title="Twitter">
+                            <i data-feather="twitter"></i>
+                        </a>
+                    </li> -->
+                    <!-- <li>
+                        <a href="https://www.linkedin.com/in/geloves" title="LinkedIn">
+                            <i data-feather="linkedin"></i>
+                        </a>
+                    </li> -->
+                    <li>
+                        <a href="/atom.xml" title="艾伦的空间">
+                            <i data-feather="rss"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                Powered by <a target="_blank" href="https://getzola.org/">Zola</a> © 艾伦的空间 2024
+            </div>
+        </div>
+        <div class="footer-bottom ">
+            <img class="beian-logo" src="/images/beian.png" />
+            <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32090302000410" rel="noreferrer" target="_blank">苏公网安备32090302000410</a>
+            &nbsp; &nbsp; | &nbsp;&nbsp;
+            <a href="https://beian.miit.gov.cn/" target="_blank">苏ICP备2023037751号</a>
+        </div>
+    </footer>
+    <script>
+        feather.replace();
+    </script>
+</body>
+
+</html>

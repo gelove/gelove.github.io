@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间 - cloudflare</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/tags/cloudflare/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-12-18T14:00:00+08:00</updated>
+    <id>/tags/cloudflare/atom.xml</id>
+    <entry xml:lang="en">
+        <title>通过 Cloudflare Worker 部署 Telegram Bot</title>
+        <published>2024-12-18T14:00:00+08:00</published>
+        <updated>2024-12-18T14:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/cloudflare-worker-deploy-telegram-bot/"/>
+        <id>/posts/cloudflare-worker-deploy-telegram-bot/</id>
+        
+        <content type="html" xml:base="/posts/cloudflare-worker-deploy-telegram-bot/">&lt;h2 id=&quot;1-chuang-jian-telegram-bot&quot;&gt;1 创建 Telegram Bot&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;在 Telegram 中搜索 “@BotFather”。&lt;&#x2F;li&gt;
+&lt;li&gt;向 BotFather 发送 &lt;code&gt;&#x2F;newbot&lt;&#x2F;code&gt; 命令。&lt;&#x2F;li&gt;
+&lt;li&gt;按照提示设置 bot 的名称和用户名。&lt;&#x2F;li&gt;
+&lt;li&gt;完成后，您将收到一个 API Token，请妥善保存。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;2-tong-guo-cloudflare-worker-bu-shu-bot&quot;&gt;2 通过 Cloudflare Worker 部署 Bot&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;2-1-dai-ma-shi-li&quot;&gt;2.1 代码示例&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;addEventListener&lt;&#x2F;span&gt;&lt;span&gt;(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;fetch&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;event &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  event.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;respondWith&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handleRequest&lt;&#x2F;span&gt;&lt;span&gt;(event.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;));
+&lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;async function &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handleRequest&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;.method === &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;POST&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;try &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;await &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ebcb8b;&quot;&gt;console&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;log&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;globalThis&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TELE_BOT_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;url &lt;&#x2F;span&gt;&lt;span&gt;= `&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;api.telegram.org&#x2F;bot${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;}&#x2F;sendMessage&lt;&#x2F;span&gt;&lt;span&gt;`;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;response &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;await &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;fetch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;url&lt;&#x2F;span&gt;&lt;span&gt;, {
+&lt;&#x2F;span&gt;&lt;span&gt;        method: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;POST&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;,
+&lt;&#x2F;span&gt;&lt;span&gt;        headers: { &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Content-Type&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;application&#x2F;json&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39; },
+&lt;&#x2F;span&gt;&lt;span&gt;        body: JSON.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;stringify&lt;&#x2F;span&gt;&lt;span&gt;({
+&lt;&#x2F;span&gt;&lt;span&gt;          chat_id: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;message&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chat&lt;&#x2F;span&gt;&lt;span&gt;.id,
+&lt;&#x2F;span&gt;&lt;span&gt;          text: `&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;You said: ${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;message&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.text}&lt;&#x2F;span&gt;&lt;span&gt;`,
+&lt;&#x2F;span&gt;&lt;span&gt;        }),
+&lt;&#x2F;span&gt;&lt;span&gt;      });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;OK&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;200 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;catch &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Error processing request&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;500 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Invalid request&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;400 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;2-2-bu-shu-bu-zou&quot;&gt;2.2 部署步骤&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;登录 Cloudflare 账户，创建新的 Worker。&lt;&#x2F;li&gt;
+&lt;li&gt;将上述代码粘贴到 Worker 编辑器中。&lt;&#x2F;li&gt;
+&lt;li&gt;在 Worker 的设置中添加环境变量 &lt;code&gt;TELE_BOT_TOKEN&lt;&#x2F;code&gt;，值为您的 Telegram Bot API Token。&lt;&#x2F;li&gt;
+&lt;li&gt;部署 Worker。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;2-3-she-zhi-webhook&quot;&gt;2.3 设置 Webhook&lt;&#x2F;h3&gt;
+&lt;p&gt;部署完成后，需要设置 Webhook 以便 Telegram 服务器能够向您的 Worker 发送更新。&lt;&#x2F;p&gt;
+&lt;p&gt;使用以下命令设置 Webhook（请在打开代理或国外服务器上运行，以避免访问不了的错误）：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;export TELE_BOT_TOKEN=your-bot-token
+&lt;&#x2F;span&gt;&lt;span&gt;curl -F &amp;quot;url=https:&#x2F;&#x2F;your-worker-subdomain.workers.dev&amp;quot; https:&#x2F;&#x2F;api.telegram.org&#x2F;bot$TELE_BOT_TOKEN&#x2F;setWebhook
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;替换 &lt;code&gt;your-worker-subdomain&lt;&#x2F;code&gt; 为实际值。&lt;&#x2F;p&gt;
+&lt;p&gt;验证 Webhook 设置：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;curl https:&#x2F;&#x2F;api.telegram.org&#x2F;bot$TELE_BOT_TOKEN&#x2F;getWebhookInfo
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;3-cloudflare-worker-shi-yong-zhu-yi-shi-xiang&quot;&gt;3 Cloudflare Worker 使用注意事项&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;环境变量访问&lt;&#x2F;strong&gt;：使用 &lt;code&gt;globalThis.&lt;&#x2F;code&gt; 前缀访问环境变量，例如：&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;globalThis&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TELE_BOT_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;ol start=&quot;2&quot;&gt;
+&lt;li&gt;&lt;strong&gt;代码保存&lt;&#x2F;strong&gt;：有时保存可能不会立即生效，需要重新进入并粘贴代码。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;调试&lt;&#x2F;strong&gt;：可以切换到 HTTP 功能，输入测试数据进行调试。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;部署&lt;&#x2F;strong&gt;：只有在预览模式下才能点击&quot;部署&quot;按钮。HTTP 模式下无法部署。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;通过以上步骤，您就可以成功创建并部署一个基于 Cloudflare Worker 的 Telegram Bot。&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>通过 cloudflare 创建无限数量企业邮箱</title>
+        <published>2024-12-15T21:00:00+08:00</published>
+        <updated>2024-12-15T21:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/cloudflare-resend-gmail/"/>
+        <id>/posts/cloudflare-resend-gmail/</id>
+        
+        <content type="html" xml:base="/posts/cloudflare-resend-gmail/">&lt;p&gt;如何在互联网大善人 cloudflare 那里白嫖无限数量的企业邮箱，这些邮箱既可以收邮件，也可以发邮件。&lt;&#x2F;p&gt;
+&lt;p&gt;可以用来接收网站验证码，注册账户的时候就可以很方便的注册一大堆小号。 还可以把他们当成临时邮箱，与人通信，避免暴露自己真实的邮箱，保护个人隐私。 Cloudflare 是一家提供 CDN、网络安全、DDos 防御和域名服务的公司，人称互联网大善人、赛博活佛。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;yu-ming&quot;&gt;域名&lt;&#x2F;h2&gt;
+&lt;p&gt;使用 Cloudflare 的前提是要有一个域名。关于域名的购买，可以看一下这期视频。&lt;&#x2F;p&gt;
+&lt;p&gt;有了域名以后，我们就把它托管到 Cloudflare 上。我们先登录一下 Cloudflare，没有账号就注册一个。右上角点击添加站点，输入你的域名，&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_1.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;然后点击继续。这里有一些付费的，我们都不要，直接找下面这个免费的，点击继续。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_2.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;更改 DNS (名称服务器)，找到这两个名称服务器。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_3.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们需要去购买域名的网站更改，把原有的 DNS 地址全部删掉，然后写入之前分配的两个服务器，点击保存。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_4.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们再回到 Cloudflare，点击立即检查，然后点击继续。这里什么都不用动，直接开始使用就可以了。&lt;&#x2F;p&gt;
+&lt;p&gt;左上角点击 Cloudflare 的图标，回到首页，域名这里显示一个绿勾和有效，那就可以开始直接使用了。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_5.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;shou-you-jian&quot;&gt;收邮件&lt;&#x2F;h2&gt;
+&lt;p&gt;我们先点击域名，进来以后选择左侧电子邮件，选择电子邮件路由。&lt;&#x2F;p&gt;
+&lt;p&gt;第一次进来以后，会有一个新手设置，点击取消新手设置，点击启用电子邮件路由。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_6.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;这里面有 4 个 DNS 值，我们点击添加记录并启用，Cloudflare 就会自动添加上这 4 个 DNS 记录。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_7.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们再点击路由规则，这里有一个 catch-all 地址，我们点击右侧的编辑，&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_8.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;点击发送到电子邮件。这里填写一个自己的电子邮箱，然后点击保存。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_9.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;保存好以后，这里会出现一个待验证。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_10.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Cloudflare 会发送一封验证邮件到这个地址，进入邮箱找到邮件并点击验证链接。刷新一下页面，打上一个绿勾，就配置完成了。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_11.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;这个配置的意思是所有发送到当前域名下的邮件都会自动转到这个 163 邮箱&lt;&#x2F;strong&gt;。这样就实现了无限多个邮箱可以收邮件。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;fa-you-jian&quot;&gt;发邮件&lt;&#x2F;h2&gt;
+&lt;p&gt;使用邮箱发送邮件，使用的服务是**&lt;a href=&quot;https:&#x2F;&#x2F;resend.com&quot;&gt;resend.com&lt;&#x2F;a&gt;**，这也是一个免费的服务，没有账号请自行注册。&lt;&#x2F;p&gt;
+&lt;p&gt;选择左侧的 API Keys，点击 create API Key，名字可填写你的域名，下面两个保持默认，点击添加。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_12.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_13.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;就会获得一个 API Key，把它保存好。这里有一个域名，我们需要把域名也添加到这个网站上，就是之前托管到 Cloudflare 的那个域名。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_14.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;好，这一步是重点&lt;&#x2F;strong&gt;。这里给了 3 个 DNS 记录，我们需要把这个记录填回 Cloudflare&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_15.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;回到 cloudflare&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_16.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_17.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们回到 resend，有一个按钮 verify DNS records，我们点击一下，检查我们之前的配置是否正确。等校验完，页面标成绿色，那就配置完成了。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_18.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shi-yong-python-fa-you-jian&quot;&gt;使用 Python 发邮件&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;python&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-python &quot;&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# 先安装依赖
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# pip install resend
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;resend
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# 这里换成自己的resend API Key
+&lt;&#x2F;span&gt;&lt;span&gt;resend.api_key = &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;re_xxxxxxxxxxxxxxxxxxxxxxx&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;params: resend.Emails.SendParams = {
+&lt;&#x2F;span&gt;&lt;span&gt;   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# 发件人可以是自己域名下的任何一个人
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;from&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;admin@你的域名&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;to&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;geloves@163.com&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;],
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;subject&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;hi&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;html&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&amp;lt;strong&amp;gt;it works!&amp;lt;&#x2F;strong&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;email = resend.Emails.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(params)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(email)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shi-yong-curl-fa-you-jian&quot;&gt;使用 cURL 发邮件&lt;&#x2F;h3&gt;
+&lt;p&gt;Authorization 换成自己的 resend API Key&lt;&#x2F;p&gt;
+&lt;p&gt;发件人可以是自己域名下的任何一个人&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;export RESEND_API_KEY=&amp;quot;re_xxxxxxxxxxxxxxxxxxxxxxx&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;curl -X POST &amp;#39;https:&#x2F;&#x2F;api.resend.com&#x2F;emails&amp;#39; -H &amp;quot;Authorization: Bearer ${RESEND_API_KEY}&amp;quot; -H &amp;#39;Content-Type: application&#x2F;json&amp;#39; -d &amp;#39;{&amp;quot;from&amp;quot;: &amp;quot;Admin &amp;lt;admin@你的域名&amp;gt;&amp;quot;,&amp;quot;to&amp;quot;:[&amp;quot;test@163.com&amp;quot;],&amp;quot;subject&amp;quot;:&amp;quot;hi&amp;quot;,&amp;quot;text&amp;quot;: &amp;quot;it works!&amp;quot;}&amp;#39;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+        
+    </entry>
+</feed>

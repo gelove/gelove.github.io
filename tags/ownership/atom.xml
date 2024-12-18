@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间 - ownership</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/tags/ownership/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2021-12-06T21:00:00+08:00</updated>
+    <id>/tags/ownership/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Rust所有权</title>
+        <published>2021-12-06T21:00:00+08:00</published>
+        <updated>2021-12-06T21:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/ownership/"/>
+        <id>/posts/ownership/</id>
+        
+        <content type="html" xml:base="/posts/ownership/">&lt;p&gt;Rust 受现代 c++的启发，引入智能指针来管理堆内存。在 rust 中，所有权是系统性的概念，是 rust 语言的基础设施。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-1-tong-yong-gai-nian&quot;&gt;5.1 通用概念&lt;&#x2F;h2&gt;
+&lt;p&gt;编程语言中的值主要分成两类：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;值类型（Value）：数据直接存储在栈中的数据类型&lt;&#x2F;li&gt;
+&lt;li&gt;引用类型（Reference）：将数据存在堆中，而栈中值存放指向堆中数据的地址（指针）&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;为了更精确的对复杂类型进行描述，引入值语义和引用语义：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;值语义（Value Semantic）：按位复制以后，和原始对象无关&lt;&#x2F;li&gt;
+&lt;li&gt;引用语义（Reference Semantic）：也叫指针语义。一般是指将数据存储于对内存中，通过栈内存的指针来管理堆内存的数据，并且引用语义禁止按位复制。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;按位复制就是指栈复制，也叫浅复制，只复制栈上的数据。深复制就是对栈上和堆上的数据一起复制。&lt;&#x2F;p&gt;
+&lt;p&gt;对于实现 Copy trait 的类型，其 clone 方法必须是按位复制的。&lt;&#x2F;p&gt;
+&lt;p&gt;rust 通过 Copy 这个标记 trait 将类型按值语义和引用语义做了精准的分类，帮助编译期检测出潜在的内存安全问题。&lt;&#x2F;p&gt;
+&lt;p&gt;引用语义不能实现 copy，但是可以实现 Clone 的 clone 方法，以实现深度复制，在需要时可以显示调用。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-2-suo-you-quan-ji-zhi&quot;&gt;5.2 所有权机制&lt;&#x2F;h2&gt;
+&lt;p&gt;在所有权体制下，Rust 引入新的语义：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;复制（copy）：对应值语义。对于可以安全在栈上进行按位复制的类型，就只需要按位复制&lt;&#x2F;li&gt;
+&lt;li&gt;移动（move）：对应引用语义。对于在堆上存储的数据，无法安全地在栈上进行按位复制。如果堆上的数据不变，只需要在栈上移动指向堆内存的指针地址，不仅保证了内存安全，也拥有与栈复制同样的性能。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;一个值的所有权被转移给另外一个变量绑定的过程，就叫做所有权转移。&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;rust 中每个值都有一个所有者，更进一步说就是，rust 中分配的每块内存都有其所有者，所有者负责该内存的释放和读写权限，并且每次每个值只能有唯一的所有者，这就是 rust 的所有权机制（ownership）&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;suo-you-quan-de-te-dian&quot;&gt;所有权的特点&lt;&#x2F;h3&gt;
+&lt;p&gt;所有者拥有以下三种权限：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;控制资源（不仅仅是内存）的释放&lt;&#x2F;li&gt;
+&lt;li&gt;出借所有权，包括不可变（共享）的和可变（独占）的&lt;&#x2F;li&gt;
+&lt;li&gt;转移所有权&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;对于可以实现 Copy 的复制语义类型来说，所有权并未改变。对于复合类型来说，是复制还是移动，取决于其成员的类型。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;结构体：即使结构体的成员都是复制语义类型，但是 rust 也不会默认为其实现 Copy。需要手工添加 &lt;code&gt;#[derive(Debug, Copy, Clone)]&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;枚举：类似结构体&lt;&#x2F;li&gt;
+&lt;li&gt;元组：本身实现了 Copy，如果元素均为复制语义类型，则默认是按位复制，否则会执行移动语义。&lt;&#x2F;li&gt;
+&lt;li&gt;数组：类似元组&lt;&#x2F;li&gt;
+&lt;li&gt;Option 类型：类似元组&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;5-3-bang-ding-zuo-yong-yu-he-sheng-ming-zhou-qi&quot;&gt;5.3 绑定、作用域和生命周期&lt;&#x2F;h2&gt;
+&lt;p&gt;Rust 使用 let 关键字来生命变量。let 有 let banding 之意，let 声明的变量实际不是传统意义上的变量，而是指一种绑定语义。let 绑定了标识符和内存，而且使得标识符对那块内存拥有了所有权，因此被称为“绑定”。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-3-1-bu-ke-bian-yu-ke-bian&quot;&gt;5.3.1 不可变与可变&lt;&#x2F;h3&gt;
+&lt;p&gt;不可变（Immutable）的优点：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;多线程并发时，不可变的数据可以安全地在线程间共享&lt;&#x2F;li&gt;
+&lt;li&gt;函数的“副作用”可以得到控制&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Rust 声明的绑定默认不可变，如果需要修改，Rust 提供关键字 mut 来声明可变绑定。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-3-2-bang-ding-de-shi-jian-shu-xing-sheng-ming-zhou-qi&quot;&gt;5.3.2 绑定的时间属性-声明周期&lt;&#x2F;h3&gt;
+&lt;p&gt;变量绑定具有“时空”双重属性：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;空间属性：指标识符与内存空间进行了绑定&lt;&#x2F;li&gt;
+&lt;li&gt;时间属性：指绑定的时效性，也就是它的生存周期&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;除了 let 声明外，还有一些场景会创建新的词法作用域：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;花括号&lt;code&gt;{}&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;match 匹配&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;循环语句&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;if let 和 while let 块&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;函数&lt;&#x2F;p&gt;
+&lt;p&gt;函数参数是复制语义时按位复制，是移动语义时会转移所有权&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;闭包&lt;&#x2F;p&gt;
+&lt;p&gt;闭包会创建新的作用域，对于环境变量来说有一下三种捕获方式：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;对于复制语义类型，以不可变应用（&lt;code&gt;&amp;amp;T&lt;&#x2F;code&gt;）来捕获&lt;&#x2F;li&gt;
+&lt;li&gt;对于移动语义类型，执行移动语义转移所有权来捕获&lt;&#x2F;li&gt;
+&lt;li&gt;对于可变绑定，如果在闭包中包含对其进行修改的操作，则以可变引用(&lt;code&gt;&amp;amp;mut&lt;&#x2F;code&gt;)来捕获&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;5-4-suo-you-quan-jie-yong&quot;&gt;5.4 所有权借用&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;yin-yong-yu-jie-yong&quot;&gt;引用与借用&lt;&#x2F;h3&gt;
+&lt;p&gt;引用（Reference）是 Rust 提供的一种指针语义。应用是基于指针的实现，和指针的区别是：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;指针保存的是指向内存的地址&lt;&#x2F;li&gt;
+&lt;li&gt;引用可以看做某块内存的别名（alias），使用引用需要满足编译期的各种安全检查规则。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;引用分为不可变引用（使用&lt;code&gt;&amp;amp;&lt;&#x2F;code&gt;操作符）和可变引用(使用&lt;code&gt;&amp;amp;mut&lt;&#x2F;code&gt;操作符)。&lt;&#x2F;p&gt;
+&lt;p&gt;在所有权系统中，引用&lt;code&gt;&amp;amp;x&lt;&#x2F;code&gt;可称为 x 的借用（Borrowing），通过 &lt;code&gt;&amp;amp;&lt;&#x2F;code&gt; 操作符来完成所有权的租借。借用所有权不会引起变量所有权的转移。&lt;&#x2F;p&gt;
+&lt;p&gt;借用所有权会让所有者（owner）受到如下限制：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;在不可变借用期间，所有者不能修改资源，并且也不能再进行可变借用&lt;&#x2F;li&gt;
+&lt;li&gt;在可变借用期间，所有者不能访问资源，并且也不能再出借所有权&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;引用在离开作用域之时，就是归还所有权之时。&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;jie-yong-gui-ze&quot;&gt;借用规则&lt;&#x2F;h3&gt;
+&lt;p&gt;为了保证内存安全，借用必须遵循以下三个规则：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;规则一：借用的生命周期不能长于出借方（拥有所有权的对象）的生命周期&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;规则二：可变借用（引用）不能有别名（Alias，即其他不可变引用）,因为可变借用具有独占性&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;规则三：不可变借用（引用）不能再次出借为可变借用&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;规则一是为了防止出现悬垂指针，规则二和规则三总结为一条核心原则：&lt;strong&gt;共享不可变，可变不共享&lt;&#x2F;strong&gt;。规则二和规则三描述的不可变借用和可变借用就相当于内存的读写锁，同一时刻，只能拥有一个写锁，或者多个读锁，不能同时拥有。&lt;&#x2F;p&gt;
+&lt;p&gt;Rust 的借用检查带来如下好处：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;不可变借用保证了没有任何指针可以修改值的内存，便于将值存储在寄存器中&lt;&#x2F;li&gt;
+&lt;li&gt;可变借用保证了在写的时候没有任何指针可以读取值的内存，避免了脏读&lt;&#x2F;li&gt;
+&lt;li&gt;不可变借用保证了内存不会在读取之后被写入新数据&lt;&#x2F;li&gt;
+&lt;li&gt;保证了不可变借用和可变借用不相互依赖，从而可以对读写操作进行自由移动和重新排序&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;解引用会获得所有权。&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-5-sheng-ming-zhou-qi-can-shu&quot;&gt;5.5 生命周期参数&lt;&#x2F;h2&gt;
+&lt;p&gt;跨函数使用借用，需要显式地对借用参数或返回值使用生命周期参数进行标注。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-5-1-xian-shi-sheng-ming-zhou-qi-can-shu&quot;&gt;5.5.1 显式生命周期参数&lt;&#x2F;h3&gt;
+&lt;p&gt;生命周期参数必须以单引号开头，参数名通常都是小写字母，比如 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 。生命周期参数位于引用符号 &amp;amp; 后面，并使用空格来分割生命周期参数和类型。如：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a i32&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a mut i32&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;标注生命周期参数并不能改变任何引用的生命周期长短，它只用于编译器的借用检查，来防止悬垂指针。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;han-shu-qian-ming-zhong-de-sheng-ming-zhou-qi-can-shu&quot;&gt;函数签名中的生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;函数签名中的生命周期参数使用如下标注语法:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;s&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;t&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;函数名后面的 &lt;code&gt;&amp;lt;&#x27;a&amp;gt;&lt;&#x2F;code&gt; 为生命周期参数的声明，与范型参数类似，必须先声明才能使用。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;输入生命周期（input lifetime）：函数或者参数的生命周期&lt;&#x2F;li&gt;
+&lt;li&gt;输出生命周期（output lifetime）：返回值的生命周期&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;函数签名的生命周期参数有这样的限制条件：&lt;strong&gt;输出（借用方）的生命周期长度必须不长于输入（出借方）的生命周期长度。&lt;&#x2F;strong&gt;（遵循借用规则一）&lt;&#x2F;p&gt;
+&lt;p&gt;禁止在没有任何输入参数的情况下返回引用。因为明显会造成悬垂指针。&lt;&#x2F;p&gt;
+&lt;p&gt;从函数中返回（输出）一个引用，其生命周期参数必须与函数的参数（输入）相匹配，否则，标记生命周期参数毫无意义。&lt;&#x2F;p&gt;
+&lt;p&gt;函数生命中的 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 可以看作是一个生命周期范型参数，输入引用和输出引用都标记为 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 意味着输出引用（借用方）的生命周期不长于输入引用（出借方）的生命周期。&lt;&#x2F;p&gt;
+&lt;p&gt;对于多个输入参数的情况，也可以标注不同的生命周期参数，如:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;the_longest&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;b&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;s&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;t&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;b str&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;&#x27;b: &#x27;a&lt;&#x2F;code&gt; 的意思是范型生命周期参数 &lt;code&gt;&#x27;b&lt;&#x2F;code&gt; 的存活时间长于范型生命周期参数 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; （即 &lt;code&gt;&#x27;b&lt;&#x2F;code&gt; outlive &lt;code&gt;&#x27;b&lt;&#x2F;code&gt;）。&lt;&#x2F;p&gt;
+&lt;p&gt;生命周期参数的目的：生命周期参数是为了帮助借用检查器验证非法借用。函数间传入和返回的借用必须相关联，并且返回的借用生命周期必须比出借方的生命周期短。&lt;&#x2F;p&gt;
+&lt;p&gt;生命周期参数是为了帮助借用检查器验证合法的引用，消除悬垂指针。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;jie-gou-ti-ding-yi-zhong-de-sheng-ming-zhou-qi-can-shu&quot;&gt;结构体定义中的生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;结构体在含有引用类型成员的时候也需要标注生命周期参数。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Foo&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;part&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这里的生命周期参数标记，实际是和编译器约定了一个规则：&lt;strong&gt;结构体实例的生命周期应短于或者等于任意一个成员的生命周期&lt;&#x2F;strong&gt;。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;fang-fa-ding-yi-zhong-de-sheng-ming-zhou-qi-can-shu&quot;&gt;方法定义中的生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;需要在 impl 关键字之后申明生命周期参数：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Foo&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    fun &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span&gt;(s: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;Self &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        ......
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    ......
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;枚举和结构体对生命周期参数的处理方式是一样的。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;jing-tai-sheng-ming-zhou-qi-can-shu&quot;&gt;静态生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;字符串字面量是全局静态类型，它的数据和程序代码一起存储于可执行文件的数据段中，其地址在编译器是已知的，无法更改。&lt;&#x2F;p&gt;
+&lt;p&gt;在 rust 2018 版本中，使用 const 和 static 定义字符串字面量时，都可以省掉 &#x27;static 静态生命周期参数。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-5-2-sheng-lue-sheng-ming-zhou-qi-can-shu&quot;&gt;5.5.2 省略生命周期参数&lt;&#x2F;h3&gt;
+&lt;p&gt;Rust 针对某些场景确定了一些常见的模式，将其编码到 Rust 编译器中，以便编译器可以自动补齐函数签名中的生命周期参数，这样就可以省略生命周期参数。&lt;&#x2F;p&gt;
+&lt;p&gt;被硬编码进编译器的模式被成为生命周期省略规则（lifetime Elision Rule），一共包含三条规则：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;每个输入位置上省略的生命周期都将成为一个不同的生命周期参数&lt;&#x2F;li&gt;
+&lt;li&gt;如果只有一个输入生命周期的位置（不管是否省略），则该生命周期都将分配给输出生命周期&lt;&#x2F;li&gt;
+&lt;li&gt;如果存在多个输入生命周期的位置，但是其中包含找 &amp;amp;self 或者 &amp;amp;mut self，则 self 的生命周期将被分配给输出生命周期。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;5-5-3-sheng-ming-zhou-qi-xian-ding&quot;&gt;5.5.3 生命周期限定&lt;&#x2F;h3&gt;
+&lt;p&gt;生命周期参数可以像 trait 那样作为范型的限定，有以下两种形式：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;T: &#x27;a&lt;&#x2F;code&gt; : 表示 T 类型中的任何引用都要&quot;活得&quot; 和 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 一样长&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;T: Trait + &#x27;a&lt;&#x2F;code&gt; : 表示 T 类型必须实现 Trait 这个 trait，并且 T 类型中任何引用都要&quot;活得&quot; 和 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 一样长&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;5-5-4-trait-dui-xiang-de-sheng-ming-zhou-qi&quot;&gt;5.5.4 trait 对象的生命周期&lt;&#x2F;h3&gt;
+&lt;p&gt;trait 对象和生命周期有默认遵循的规则：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;trait 对象的生命周期默认是 &lt;code&gt;&#x27;static&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;如果实现 trait 的类型包含 &lt;code&gt;&amp;amp;&#x27;a X&lt;&#x2F;code&gt; 或者 &lt;code&gt;&amp;amp;&#x27;a mut X&lt;&#x2F;code&gt;，则默认生命周期就是 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;如果实现 trait 的类型只有 &lt;code&gt;T: &#x27;a&lt;&#x2F;code&gt;，则默认生命周期就是 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;如果实现 trait 的类型包含多个类似 &lt;code&gt;T: &#x27;a&lt;&#x2F;code&gt; 的从句，则生命周期需要明确指定&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;5-6-zhi-neng-zhi-zhen-yu-suo-you-quan&quot;&gt;5.6 智能指针与所有权&lt;&#x2F;h2&gt;
+&lt;p&gt;智能指针和普通引用的区别之一就是所有权的不同：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;智能指针拥有资源的所有权&lt;&#x2F;li&gt;
+&lt;li&gt;普通引用只是对所有权的借用&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 智能指针可以使用解引用操作符进行解引用。&lt;&#x2F;p&gt;
+&lt;p&gt;之所以可以进行解引用，是因为 &lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 实现了 deref 方法：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;T: &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#bf616a;color:#2b303b;&quot;&gt;?&lt;&#x2F;span&gt;&lt;span&gt;Sized&amp;gt; Deref for Box&amp;lt;T&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Target = T;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;deref&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;T {
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;amp;**&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;对于 &lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 类型来说，如果包含的类型 T 属于复制语义，则执行按位复制；如果属于移动语义，则移动所有权。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-6-1-gong-xiang-suo-you-quan-rc-t-he-weak-t&quot;&gt;5.6.1 共享所有权 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;Weak&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Rust 中提供了 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 智能指针来支持引用计数。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 可以将多个所有权共享给多个变量。 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 主要用于系统共享堆上分配的数据可以供程序的多个部分读取的场景，并且主要确保共享的资源的析构函数都能被调用。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 是单线程引用计数指针，不是线程安全的类型。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;强引用： 通过 clone 方法共享的引用所有权被成为强引用&lt;&#x2F;li&gt;
+&lt;li&gt;弱引用： 通过 downgrade 方法创建的 &lt;code&gt;Weak&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 智能指针属于 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 的另一种版本，它共享的指针没有所有权，所以被成为弱引用。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;5-6-2-nei-bu-ke-bian-xing-cell-t-he-refcell-t&quot;&gt;5.6.2 内部可变性 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Rust 中的可变或不可变主要是针对一个变量绑定而言，比如对于结构体来说，可变或者不可变只能对其实例进行设置，而不能设置单个成员的可变性。但是在实际的开发中，某个字段是可变而其他字段不可变的情况是确实存在的。&lt;&#x2F;p&gt;
+&lt;p&gt;Rust 提供&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 来应对这种情况，他们本事上不属于智能指针，只是提供内部可变性（Interior Mutability）的容器。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;cell-t&quot;&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;内部可变性实际上是 Rust 中的一种设计模式。&lt;&#x2F;p&gt;
+&lt;p&gt;内部可变性容器是对 Struct 的一种封装，表面不可变，但内部可以通过某个方法来改变里面的值。&lt;&#x2F;p&gt;
+&lt;p&gt;使用 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 内部可变容器确实方便了编程，它提供的 set&#x2F;get 方法像极了 oop 语言中常见的 getter&#x2F;setter 方法，封装了对象属性的获取和设置方法。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 通过对外暴露的 get&#x2F;set 方法实现了对内部值的修改，而其本身却是不可变的。所以，实际上 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 包裹的 T 本身合法的避开了借用检查。&lt;&#x2F;p&gt;
+&lt;p&gt;对于包裹在 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 中的类型 T ，只有实现了 Copy 的类型 T，才可以使用 get 方法获取包裹的值，因为 get 方法返回的是对内部值的复制。但是任何类型 T 都可以使用 set 方法修改其包裹的值。&lt;&#x2F;p&gt;
+&lt;p&gt;对于实现了 Copy 的 T，可以任意读取；对于没有实现 Copy 的类型 T，则提供了 get_mut 方法来返回可变借用，依然遵循 Rust 的借用检查规则。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 内部每次 get&#x2F;set 都会执行一次按位复制。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;refcell-t&quot;&gt;&lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;对于没有实现 Copy 的类型，使用 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 有许多不变。 Rust 提供的 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 适用的范围更广，对类型 T 并没有 Copy 的限制。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 提供 borrow&#x2F;borrow_mut 方法，对应 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 的 get&#x2F;set 方法。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 维护一个运行时借用检查器，有运行时开销。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;xiao-jie&quot;&gt;小结&lt;&#x2F;h4&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 使用最多的场景就是配合只读引用来使用，比如 &lt;code&gt;&amp;amp;T&lt;&#x2F;code&gt; 或者 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 之间的区别可以总结为：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 使用 set&#x2F;get 直接操作包裹的值，而 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 通过 borrow&#x2F;borrow_mut 返回包装过的引用 &lt;code&gt;Ref&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefMut&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 来操作包裹的值。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 一般适合复制语义类型（实现了 Copy）， &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 一般适合移动语义类型（未实现 Copy）&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 无运行时开销，而且永远不会在运行时引发 panic 错误。 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 需要在运行时执行借用检查，有运行时开销。而且一旦发现违反借用规则的情况，则会引发看线程 panic 。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;5-6-3-xie-shi-fu-zhi-cow-t&quot;&gt;5.6.3 写时复制&lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;写时复制(Copy On Write &#x2F; Cow) 是一种优化策略。&lt;&#x2F;p&gt;
+&lt;p&gt;Rust 中的 &lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 是一个枚举体的智能指针，包括两个可选值：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Borrowed：用于包裹引用&lt;&#x2F;li&gt;
+&lt;li&gt;Owned：用于包裹所有者&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 提供的功能是： &lt;strong&gt;以不可变的方式访问借用内容，以及在需要可变借用或所有权的时候再克隆一份数据&lt;&#x2F;strong&gt;。&lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 旨在减少复制操作，提供性能，一般用在读多写少的场景。&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
