@@ -118,7 +118,7 @@ git push -u origin main
 参考[文档](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site)配置自定义域名的 DNS 记录。
 
 进入 Github 仓库的 `Settings > Pages` 页面，设置自定义域名。
-比如说我的自定义域名 `allens.top` 设置成功后，即可访问：[`https://allens.top`](https://allens.top)。
+比如说我的自定义域名 `www.allens.top` 设置成功后，即可访问：[`https://www.allens.top`](https://www.allens.top)。
 ![custom domain](/images/1697204305581.jpg)
 
 这将创建一个提交，将 CNAME 文件直接添加到分支的根目录下。
