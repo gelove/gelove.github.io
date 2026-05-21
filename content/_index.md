@@ -14,7 +14,6 @@ title = "闲谈技术"
 - Rust: 熟练
 - Dart: 熟练
 - JS/TS: 熟练
-- Python: 入门
 
 ### 博客
 
