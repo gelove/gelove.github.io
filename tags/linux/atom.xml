@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间 - Linux</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/tags/linux/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2022-09-26T21:56:00+08:00</updated>
+    <id>/tags/linux/atom.xml</id>
+    <entry xml:lang="en">
+        <title>集成 Alacritty 和 Tmux 打造超级终端</title>
+        <published>2022-09-26T21:56:00+08:00</published>
+        <updated>2022-09-26T21:56:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/alacritty-integration-with-tmux/"/>
+        <id>/posts/alacritty-integration-with-tmux/</id>
+        
+        <content type="html" xml:base="/posts/alacritty-integration-with-tmux/">&lt;p&gt;Alacritty 是一个使用 OpenGL 的跨平台、GPU 加速的终端仿真器。它专注于性能和简单性，甚至没有标签或窗口拆分等功能。&lt;&#x2F;p&gt;
+&lt;p&gt;Tmux 是一个用于在终端窗口中运行多个终端会话的工具，即终端复用软件（terminal multiplexer）。在 tmux 中可以根据不同的工作任务创建不同的会话，每个会话又可以创建多个窗口来完成不同的工作，每个窗口又可以分割成很多窗格。&lt;&#x2F;p&gt;
+&lt;p&gt;将 alacritty 和 tmux 深度集成到自己的工作流之中，打造出一个顺心应手、高效率、可定制的超级终端。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;te-xing&quot;&gt;特性&lt;&#x2F;h2&gt;
+&lt;p&gt;此次深度集成，拥有 alacritty 和 tmux 各自的优点。在 macOS 完全可以代替 iTerm2.app 和 Terminal.app，达到了跨平台、高可用性、统一的超级终端。拥有以下特性：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;快速便捷的、人体工学设计的快捷键。&lt;&#x2F;li&gt;
+&lt;li&gt;简洁实用的、美丽大方的终端主题。&lt;&#x2F;li&gt;
+&lt;li&gt;所有新建的窗格、选项卡使用当前的工作目录。&lt;&#x2F;li&gt;
+&lt;li&gt;本地会话与 SSH 远程会话一视同仁。&lt;&#x2F;li&gt;
+&lt;li&gt;自动重连的 SSH 远程会话。&lt;&#x2F;li&gt;
+&lt;li&gt;灵活的脚本定制化。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;看动图直观感受一下：
+&lt;img src=&quot;&#x2F;images&#x2F;demo_alacritty_shortcuts.gif&quot; alt=&quot;demo alacritty shortcuts&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;an-zhuang&quot;&gt;安装&lt;&#x2F;h2&gt;
+&lt;p&gt;可以通过使用 Linux、BSD、macOS 和 Windows 上的各种包管理器来安装 alacritty 和 tmux，并安装配套所需要的字体和工具。目前已在 macOS 顺畅使用，以下安装步骤以 macOS 为平台。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;alacritty-an-zhuang&quot;&gt;Alacritty 安装&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --cask&lt;&#x2F;span&gt;&lt;span&gt; alacritty
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;tmux-an-zhuang&quot;&gt;Tmux 安装&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install tmux
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;zi-ti-an-zhuang&quot;&gt;字体安装&lt;&#x2F;h3&gt;
+&lt;p&gt;我选择打过 Nerd Font 字体补丁的 JetBrains Mono 作为终端的默认字体。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; tap homebrew&#x2F;cask-fonts
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install font-jetbrains-mono
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install font-jetbrains-mono-nerd-font
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;fish-an-zhuang&quot;&gt;Fish 安装&lt;&#x2F;h3&gt;
+&lt;p&gt;我选择 fish 作为终端的默认 Shell。（可选，可修改配置使用其他 Shell）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install fish
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;fzf-an-zhuang&quot;&gt;Fzf 安装&lt;&#x2F;h3&gt;
+&lt;p&gt;快速模糊查找。（可选，仅在命令菜单和会话菜单中使用）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install fzf
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;autossh-an-zhuang&quot;&gt;Autossh 安装&lt;&#x2F;h3&gt;
+&lt;p&gt;自动重连的 SSH 客户端。（可选，可以修改配置使用普通的 SSH 客户端）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install autossh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;pei-zhi&quot;&gt;配置&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;alacritty-pei-zhi&quot;&gt;Alacritty 配置&lt;&#x2F;h3&gt;
+&lt;p&gt;Alacritty 默认使用的配置文件路径 &lt;code&gt;~&#x2F;.config&#x2F;alacritty&#x2F;alacritty.yml&lt;&#x2F;code&gt;。
+我正在使用的配置文件：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;qingshan&#x2F;dotfiles&#x2F;blob&#x2F;main&#x2F;alacritty&#x2F;alacritty.yml&quot;&gt;alacritty.yml&lt;&#x2F;a&gt;。
+运行下面的命令可以把我的配置文件自动下载并使用：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -fLo ~&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;.config&#x2F;alacritty&#x2F;alacritty.yml&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --create-dir &lt;&#x2F;span&gt;&lt;span&gt;\
+&lt;&#x2F;span&gt;&lt;span&gt;    https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;alacritty&#x2F;alacritty.yml
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;tmux-pei-zhi&quot;&gt;Tmux 配置&lt;&#x2F;h3&gt;
+&lt;p&gt;Tmux 默使用的配置文件路径 &lt;code&gt;~&#x2F;.tmux.conf&lt;&#x2F;code&gt;
+我正在使用的配置文件：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;qingshan&#x2F;dotfiles&#x2F;blob&#x2F;main&#x2F;.tmux.conf&quot;&gt;.tmux.conf&lt;&#x2F;a&gt;。
+运行下面的命令可以把我的配置文件自动下载并使用：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -fLo ~&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;.tmux.conf \
+&lt;&#x2F;span&gt;&lt;span&gt;    https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;.tmux.conf
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;kuai-jie-jian-chong-tu&quot;&gt;快捷键冲突&lt;&#x2F;h3&gt;
+&lt;p&gt;绑定的快捷键与 alacritty 和 macOS Screenshot 默认的一些快捷键冲突，我选择调整冲突的这些默认快捷键。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Alacritty 有两个快捷键冲突：&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;H&lt;&#x2F;kbd&gt; 和 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Q&lt;&#x2F;kbd&gt;；&lt;&#x2F;li&gt;
+&lt;li&gt;macOS Screenshot 有多个数字快捷键冲突：&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;3&lt;&#x2F;kbd&gt; 到 &lt;kbd&gt;6&lt;&#x2F;kbd&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h4 id=&quot;alacritty-kuai-jie-jian-chong-tu&quot;&gt;Alacritty 快捷键冲突&lt;&#x2F;h4&gt;
+&lt;p&gt;在 &lt;code&gt;System Preferences&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Keyboard&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Shortcuts&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;App Shortcuts&lt;&#x2F;code&gt; 下点击 &lt;code&gt;+&lt;&#x2F;code&gt; 按钮，添加两项菜单主题对应的快捷键：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Hide alacritty&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Quit alacritty&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;定义的快捷键只要不是冲突的那两个快捷键都可以，添加后的结果如下：
+&lt;img src=&quot;&#x2F;images&#x2F;remap_alacritty_shortcuts.png&quot; alt=&quot;remap_alacritty_shortcuts&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;macos-screenshot-kuai-jie-jian-chong-tu&quot;&gt;macOS Screenshot 快捷键冲突&lt;&#x2F;h4&gt;
+&lt;p&gt;在 &lt;code&gt;System Preferences&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Keyboard&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Shortcuts&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Screenshots&lt;&#x2F;code&gt; 下取消所有 Screenshot 的快捷键。因为我可以直接运行 Screenshot.app 来截图。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;shi-yong&quot;&gt;使用&lt;&#x2F;h2&gt;
+&lt;p&gt;绑定快捷键使用&lt;kbd&gt;Command&lt;&#x2F;kbd&gt;或者&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt;作为修饰键。部分快捷键与 iTerm2.app 和 Terminal.app 的绑定对应，部分快捷键与我的 i3 的绑定对应。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ji-ben-cao-zuo&quot;&gt;基本操作&lt;&#x2F;h3&gt;
+&lt;p&gt;新建&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;D&lt;&#x2F;kbd&gt; 垂直分割窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Return&lt;&#x2F;kbd&gt; 水平分割窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;T&lt;&#x2F;kbd&gt; 新建选项卡&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;关闭&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;W&lt;&#x2F;kbd&gt; 关闭窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;W&lt;&#x2F;kbd&gt; 关闭选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Q&lt;&#x2F;kbd&gt; 关闭窗口&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;访问窗格&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;H&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Left&lt;&#x2F;kbd&gt; 访问左边的窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;J&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Up&lt;&#x2F;kbd&gt; 访问上面的窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;K&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Down&lt;&#x2F;kbd&gt; 访问下面的窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;L&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Right&lt;&#x2F;kbd&gt; 访问右边的窗格&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;访问选项卡&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;1&lt;&#x2F;kbd&gt; 到 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;9&lt;&#x2F;kbd&gt; - 按数字切换选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;b&lt;&#x2F;kbd&gt; 切换到最近一次访问的选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;[&lt;&#x2F;kbd&gt; 切换到上一个选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;]&lt;&#x2F;kbd&gt; 切换到下一个选项卡&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;访问窗口&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;`&lt;&#x2F;kbd&gt;：切换窗口。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;bu-ju-cao-zuo&quot;&gt;布局操作&lt;&#x2F;h3&gt;
+&lt;p&gt;调整窗格大小&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;H&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Left&lt;&#x2F;kbd&gt; 向左边的窗格推进&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;J&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Up&lt;&#x2F;kbd&gt; 向上面的窗格推进&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;K&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Down&lt;&#x2F;kbd&gt; 向下面的窗推进&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;L&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Right&lt;&#x2F;kbd&gt; 向右边的窗格推进&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;移动窗格到选项卡&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;1&lt;&#x2F;kbd&gt; 到 9: 将窗格移动到指定的选项卡中。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;缩放窗格&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Z&lt;&#x2F;kbd&gt; 缩放当前窗格。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;调整窗格布局&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Z&lt;&#x2F;kbd&gt;：使用预设置的五种布局重新调整窗格。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;修改选项卡名称&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;,&lt;&#x2F;kbd&gt;：修改选项卡名称。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;yan-bo-shu-ru&quot;&gt;广播输入&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;I&lt;&#x2F;kbd&gt;：广播输入到当前选项卡的所有窗格。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;tmux-ming-ling&quot;&gt;Tmux 命令&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;I&lt;&#x2F;kbd&gt;：输入 tmux 命令。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;zi-ti-cao-zuo&quot;&gt;字体操作&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;+&lt;&#x2F;kbd&gt;：调整更大的字体&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;-&lt;&#x2F;kbd&gt;：调整更小的字体&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;0&lt;&#x2F;kbd&gt;：恢复默认大小的字体&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;fu-zhi-mo-shi&quot;&gt;复制模式&lt;&#x2F;h3&gt;
+&lt;h4 id=&quot;vi-fu-zhi-mo-shi&quot;&gt;Vi 复制模式&lt;&#x2F;h4&gt;
+&lt;p&gt;查找关键词并进入 Vi 复制模式：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;F&lt;&#x2F;kbd&gt;：进入 Vi 复制模式，从上往下的方向查找关键词。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;F&lt;&#x2F;kbd&gt;：进入 Vi 复制模式，从下往上的方向查找关键词。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;进入 Vi 复制模式后：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;v&lt;&#x2F;kbd&gt; 按字选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;V&lt;&#x2F;kbd&gt; 按行选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Ctrl&lt;&#x2F;kbd&gt; + &lt;kbd&gt;v&lt;&#x2F;kbd&gt; 按块状选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Esc&lt;&#x2F;kbd&gt; 取消选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;A&lt;&#x2F;kbd&gt; 复制选择的文本追加到剪贴板，并退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;D&lt;&#x2F;kbd&gt; 复制当前行到行尾的文本到剪贴板，并退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;y&lt;&#x2F;kbd&gt; 复制选择的文本到剪贴板，并退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Y&lt;&#x2F;kbd&gt; 复制选择的文本到剪贴板，并保持 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;q&lt;&#x2F;kbd&gt; 退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;还有更多，请查文档。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h4 id=&quot;shu-biao-mo-shi&quot;&gt;鼠标模式&lt;&#x2F;h4&gt;
+&lt;p&gt;使用鼠标选择文本，会自动复制到操作系统的剪贴板。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;jin-jie&quot;&gt;进阶&lt;&#x2F;h3&gt;
+&lt;h4 id=&quot;kuai-jie-ming-ling&quot;&gt;快捷命令&lt;&#x2F;h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;R&lt;&#x2F;kbd&gt;: 弹出快捷命令菜单，并在当前窗格执行选择的命令。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;D&lt;&#x2F;kbd&gt;：弹出快捷命令菜单，并在新建垂直分割的窗格执行选择的命令。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Retrun&lt;&#x2F;kbd&gt;：弹出快捷命令菜单，并在新建水平分割的窗格执行选择的命令。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;T&lt;&#x2F;kbd&gt;：弹出快捷命令菜单，并在新建的选项卡执行选择的命令。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;快捷命令弹出一个窗口，可以选择需要执行的命令。快捷命令列表由自定义一个可执行的脚本文件 &lt;code&gt;tmux-commands&lt;&#x2F;code&gt; 负责提供。脚本文件放到 PATH 路径中。
+可以参考我的脚本文件：&lt;a href=&quot;https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;bin&#x2F;tmux-commands&quot;&gt;&lt;code&gt;tmux-commands&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;。
+脚本文件内容如下（命令列表内容根据需要自行修改）：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#!&#x2F;usr&#x2F;bin&#x2F;env bash
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fzf --reverse --header&lt;&#x2F;span&gt;&lt;span&gt; Commands) &amp;lt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;EOF
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;cargo run
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;cargo test
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ssh lab
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;EOF
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;直接执行这个命令确认一下：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux-commands
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;从快捷命令中选择一个命令，会直接输出打印出来。确认没有问题之后，直接通过上面的快捷键呼叫。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;kuai-jie-hui-hua&quot;&gt;快捷会话&lt;&#x2F;h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;N&lt;&#x2F;kbd&gt;：弹出窗口显示本地会话列表，并在当前窗口切换到选择的会话中。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;N&lt;&#x2F;kbd&gt;：弹出窗口显示本地会话和远程会话列表，并新建一个窗口切换到选择的会话中。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;快捷会话默认从 tmux 加载会话列表。也可以自定义一个可执行的脚本文件：&lt;code&gt;tmux-sessions&lt;&#x2F;code&gt;，放到 PATH 路径中。
+可以参考我的脚本文件：&lt;a href=&quot;https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;bin&#x2F;tmux-sessions&quot;&gt;&lt;code&gt;tmux-sessions&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;注意：远程服务器上也应该有 &lt;code&gt;tmux-commands&lt;&#x2F;code&gt; 和 &lt;code&gt;tmux-sessions&lt;&#x2F;code&gt; 两个脚本文件。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bao-cun-wen-jian&quot;&gt;保存文件&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;S&lt;&#x2F;kbd&gt;：输出 Vim 保存文件的指令 &lt;code&gt;&amp;lt;ESC&amp;gt;:w&amp;lt;CR&amp;gt;&lt;&#x2F;code&gt;，注意要在 Vim 下使用。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;时不时的保存文件是个好习惯。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;tmux-kuai-jie-jian&quot;&gt;Tmux 快捷键&lt;&#x2F;h3&gt;
+&lt;p&gt;因为通常 tmux 绑定的快捷键前缀 &lt;code&gt;Ctrl-a&lt;&#x2F;code&gt; 和 &lt;code&gt;Ctrl-b&lt;&#x2F;code&gt; 经常在 Shell 或者 Vim 中有使用，所以我重新定义的 tmux 的 快捷键前缀为 &lt;kbd&gt;Ctrl&lt;&#x2F;kbd&gt; + &lt;kbd&gt;\&lt;&#x2F;kbd&gt;。
+选择的原因是这个快捷键很少被其他应用程序使用，另外一个原因是在我的集成中没有太多机会使用 tmux 的快捷键，所以选择一个不冲突的快捷键前缀对我来说是最好的选择。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;pei-zhi-shuo-ming&quot;&gt;配置说明&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;pei-zhi-zhong-duan-lei-xing&quot;&gt;配置终端类型&lt;&#x2F;h3&gt;
+&lt;p&gt;给 alacritty 追加环境变量：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TERM&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;xterm-256color
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-zi-ti&quot;&gt;配置字体&lt;&#x2F;h3&gt;
+&lt;p&gt;指定使用 JetBrains Mono 字体，字体大小设置为 14 点数。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;font&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;normal&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Regular
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bold&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Bold
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;italic&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Italic
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bold_italic&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Bold Italic
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;14
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-chuang-kou&quot;&gt;配置窗口&lt;&#x2F;h3&gt;
+&lt;p&gt;Alacritty 启动的时候使用全屏模式，但是又不独占一个桌面。窗口不需要任何裱装。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;window&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;startup_mode&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;SimpleFullscreen
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;decorations&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;none
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-shell&quot;&gt;配置 Shell&lt;&#x2F;h3&gt;
+&lt;p&gt;使用 Fish 作为默认的 Shell。启动的时候总是直接创建或使用名为 &lt;code&gt;main&lt;&#x2F;code&gt; 的 tmux 会话。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;shell&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;program&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;fish
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;args&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--login
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--command
+&lt;&#x2F;span&gt;&lt;span&gt;    - &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tmux new-session -A -D -s main&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-kuai-jie-jian-ying-she&quot;&gt;配置快捷键映射&lt;&#x2F;h3&gt;
+&lt;p&gt;可以映射到 tmux 的绑定：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;T&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mods&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Command&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chars&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;\x1c&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;c&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# new tab with default shell
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;甚至 Vim 指令：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;S&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mods&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Command&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chars&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;\x1b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;:w&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;\x0a&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Type &amp;lt;escape&amp;gt;:w&amp;lt;enter&amp;gt; to save vim
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;还可以可以映射运行程序：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;N&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mods&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Command|Shift&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;command&lt;&#x2F;span&gt;&lt;span&gt;: { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;program&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;alacritty&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;args&lt;&#x2F;span&gt;&lt;span&gt;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;msg&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;create-window&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;-e&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;fish&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--login&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--command&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tmux-sessions --all&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;] } } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# open session in new window with all sessions menu across servers
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;jiang-li&quot;&gt;奖励&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;alacritty-tu-biao&quot;&gt;Alacritty 图标&lt;&#x2F;h3&gt;
+&lt;p&gt;Alacritty 默认的图标在 Dock 上与其他应用程序的图标有点格格不入。但是作者不愿意调整图标上，那我只好自己动手调整。
+参考：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alacritty&#x2F;alacritty&#x2F;issues&#x2F;3926&quot;&gt;issue:3926&lt;&#x2F;a&gt;
+下载 &lt;a href=&quot;https:&#x2F;&#x2F;www.dropbox.com&#x2F;s&#x2F;0i4ez0el7paksg3&#x2F;Alacritty.icns?dl=0&quot;&gt;Alacritty.icns&lt;&#x2F;a&gt; 并更新 Alacritty.app&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shu-ru-fa-tui-ge-jian&quot;&gt;输入法退格键&lt;&#x2F;h3&gt;
+&lt;p&gt;macOS 下输入法退格键会删除已输入内容的问题：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alacritty&#x2F;alacritty&#x2F;issues&#x2F;1606&quot;&gt;issues:1606&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;官方给出的临时解决方案为：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key_bindings&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Back&lt;&#x2F;span&gt;&lt;span&gt;,                          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span&gt;:  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ReceiveChar     &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;alt-zu-he-jian-ying-she&quot;&gt;Alt 组合键映射&lt;&#x2F;h3&gt;
+&lt;p&gt;所有以 &lt;kbd&gt;Alt&lt;&#x2F;kbd&gt; 和 &lt;kbd&gt;Alt&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; 为修饰键的按键都映射为 Esc 前缀键码。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ide-bu-ju&quot;&gt;IDE 布局&lt;&#x2F;h3&gt;
+&lt;p&gt;写一个脚本并执行实现自动创建类似 IDE 布局：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; split-window&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -v -p&lt;&#x2F;span&gt;&lt;span&gt; 30
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; send-keys &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;echo &amp;#39;run&amp;#39;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; enter
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; split-window&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -h -p&lt;&#x2F;span&gt;&lt;span&gt; 50
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; send-keys &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;echo &amp;#39;preview&amp;#39;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; enter
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;hou-xu&quot;&gt;后续&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;input disabled=&quot;&quot; type=&quot;checkbox&quot;&#x2F;&gt;
+加上 tmux-resurrect 插件，断电或者电脑重启后，都可以快速进入基本工作环境。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;input disabled=&quot;&quot; type=&quot;checkbox&quot;&#x2F;&gt;
+使用 &lt;code&gt;tmux display-popup&lt;&#x2F;code&gt; 实现快捷方便的弹出窗口。快捷键可以考虑映射 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;F1&lt;&#x2F;kbd&gt; 到 &lt;kbd&gt;F12&lt;&#x2F;kbd&gt;。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;can-kao-zi-liao&quot;&gt;参考资料&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;arslan.io&#x2F;2018&#x2F;02&#x2F;05&#x2F;gpu-accelerated-terminal-alacritty&#x2F;&quot;&gt;Alacritty integration with Tmux&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.joshmedeski.com&#x2F;posts&#x2F;macos-keyboard-shortcuts-for-tmux&quot;&gt;macOS Keyboard Shortcuts for tmux&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alacritty&#x2F;alacritty&#x2F;blob&#x2F;master&#x2F;docs&#x2F;features.md&quot;&gt;Alacritty&#x27;s documentation&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;man7.org&#x2F;linux&#x2F;man-pages&#x2F;man1&#x2F;tmux.1.html&quot;&gt;tmux Manual Pages&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+</feed>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间 - douyin</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/tags/douyin/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-11-19T22:00:00+08:00</updated>
+    <id>/tags/douyin/atom.xml</id>
+    <entry xml:lang="en">
+        <title>抖音视频下载与音视频转码工具</title>
+        <published>2024-11-19T22:00:00+08:00</published>
+        <updated>2024-11-19T22:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/douyin-downloader/"/>
+        <id>/posts/douyin-downloader/</id>
+        
+        <content type="html" xml:base="/posts/douyin-downloader/">&lt;p&gt;Downloader 是一个跨平台的抖音视频下载器，目前支持 macOS 与 windows，并具有音视频转码功能。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;由 Tauri2 + Rust + React + Typescript 开发&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xia-zai-an-zhuang&quot;&gt;下载安装&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bin.616161616.xyz&#x2F;Downloader_1.0.5_aarch64.dmg&quot;&gt;macOS-apple&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bin.616161616.xyz&#x2F;Downloader_1.0.5_x64.dmg&quot;&gt;macOS-intel&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bin.616161616.xyz&#x2F;Downloader_1.0.5_x64-setup.exe&quot;&gt;windows-x64&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;MacOS 用户安装程序时出现以下警告是正常的, 请点击取消即可&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_1.png&quot; alt=&quot;image-1&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;然后在设置中允许打开就 OK 了&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_2.png&quot; alt=&quot;image-2&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;然后会再次弹出一次警告&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_3.png&quot; alt=&quot;image-3&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;程序打开报损坏则继续在设置中允许打开或者在终端输入以下命令&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;xattr -c&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;Applications&#x2F;Downloader.app
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;cookie-huo-qu-jiao-cheng&quot;&gt;Cookie 获取教程&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;打开浏览器，访问 &lt;a href=&quot;https:&#x2F;&#x2F;www.douyin.com&quot;&gt;抖音&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;登录抖音账号&lt;&#x2F;li&gt;
+&lt;li&gt;按 &lt;strong&gt;&lt;em&gt;F12&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 打开开发人员工具&lt;&#x2F;li&gt;
+&lt;li&gt;选择 &lt;strong&gt;&lt;em&gt;网络&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;勾选 &lt;strong&gt;&lt;em&gt;保留日志&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;在 &lt;strong&gt;&lt;em&gt;筛选器&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 输入框输入 &lt;strong&gt;&lt;em&gt;cookie-name:odin_tt&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;访问 &lt;strong&gt;&lt;em&gt;抖音网页版&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 中任意用户主页 或者访问 &lt;a href=&quot;https:&#x2F;&#x2F;www.douyin.com&#x2F;follow&quot;&gt;关注页&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;在开发人员工具窗口选择任意一个数据包(如果无数据包，重复步骤 7)&lt;&#x2F;li&gt;
+&lt;li&gt;全选并复制 &lt;strong&gt;&lt;em&gt;Cookie&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 的值&lt;&#x2F;li&gt;
+&lt;li&gt;运行程序 ，根据提示写入 &lt;strong&gt;&lt;em&gt;Cookie&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;jie-tu-shi-li&quot;&gt;截图示例&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_cookie.png&quot; alt=&quot;cookie&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

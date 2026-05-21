@@ -1,0 +1,1161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-12-18T14:00:00+08:00</updated>
+    <id>/atom.xml</id>
+    <entry xml:lang="en">
+        <title>通过 Cloudflare Worker 部署 Telegram Bot</title>
+        <published>2024-12-18T14:00:00+08:00</published>
+        <updated>2024-12-18T14:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/cloudflare-worker-deploy-telegram-bot/"/>
+        <id>/posts/cloudflare-worker-deploy-telegram-bot/</id>
+        
+        <content type="html" xml:base="/posts/cloudflare-worker-deploy-telegram-bot/">&lt;h2 id=&quot;1-chuang-jian-telegram-bot&quot;&gt;1 创建 Telegram Bot&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;在 Telegram 中搜索 “@BotFather”。&lt;&#x2F;li&gt;
+&lt;li&gt;向 BotFather 发送 &lt;code&gt;&#x2F;newbot&lt;&#x2F;code&gt; 命令。&lt;&#x2F;li&gt;
+&lt;li&gt;按照提示设置 bot 的名称和用户名。&lt;&#x2F;li&gt;
+&lt;li&gt;完成后，您将收到一个 API Token，请妥善保存。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;2-tong-guo-cloudflare-worker-bu-shu-bot&quot;&gt;2 通过 Cloudflare Worker 部署 Bot&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;2-1-dai-ma-shi-li&quot;&gt;2.1 代码示例&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;addEventListener&lt;&#x2F;span&gt;&lt;span&gt;(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;fetch&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;event &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  event.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;respondWith&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handleRequest&lt;&#x2F;span&gt;&lt;span&gt;(event.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;));
+&lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;async function &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handleRequest&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;.method === &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;POST&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;try &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;await &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ebcb8b;&quot;&gt;console&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;log&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;globalThis&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TELE_BOT_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;url &lt;&#x2F;span&gt;&lt;span&gt;= `&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;api.telegram.org&#x2F;bot${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;}&#x2F;sendMessage&lt;&#x2F;span&gt;&lt;span&gt;`;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;response &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;await &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;fetch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;url&lt;&#x2F;span&gt;&lt;span&gt;, {
+&lt;&#x2F;span&gt;&lt;span&gt;        method: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;POST&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;,
+&lt;&#x2F;span&gt;&lt;span&gt;        headers: { &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Content-Type&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;application&#x2F;json&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39; },
+&lt;&#x2F;span&gt;&lt;span&gt;        body: JSON.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;stringify&lt;&#x2F;span&gt;&lt;span&gt;({
+&lt;&#x2F;span&gt;&lt;span&gt;          chat_id: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;message&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chat&lt;&#x2F;span&gt;&lt;span&gt;.id,
+&lt;&#x2F;span&gt;&lt;span&gt;          text: `&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;You said: ${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;message&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.text}&lt;&#x2F;span&gt;&lt;span&gt;`,
+&lt;&#x2F;span&gt;&lt;span&gt;        }),
+&lt;&#x2F;span&gt;&lt;span&gt;      });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;OK&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;200 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;catch &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Error processing request&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;500 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Invalid request&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;400 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;2-2-bu-shu-bu-zou&quot;&gt;2.2 部署步骤&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;登录 Cloudflare 账户，创建新的 Worker。&lt;&#x2F;li&gt;
+&lt;li&gt;将上述代码粘贴到 Worker 编辑器中。&lt;&#x2F;li&gt;
+&lt;li&gt;在 Worker 的设置中添加环境变量 &lt;code&gt;TELE_BOT_TOKEN&lt;&#x2F;code&gt;，值为您的 Telegram Bot API Token。&lt;&#x2F;li&gt;
+&lt;li&gt;部署 Worker。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;2-3-she-zhi-webhook&quot;&gt;2.3 设置 Webhook&lt;&#x2F;h3&gt;
+&lt;p&gt;部署完成后，需要设置 Webhook 以便 Telegram 服务器能够向您的 Worker 发送更新。&lt;&#x2F;p&gt;
+&lt;p&gt;使用以下命令设置 Webhook（请在打开代理或国外服务器上运行，以避免访问不了的错误）：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;export TELE_BOT_TOKEN=your-bot-token
+&lt;&#x2F;span&gt;&lt;span&gt;curl -F &amp;quot;url=https:&#x2F;&#x2F;your-worker-subdomain.workers.dev&amp;quot; https:&#x2F;&#x2F;api.telegram.org&#x2F;bot$TELE_BOT_TOKEN&#x2F;setWebhook
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;替换 &lt;code&gt;your-worker-subdomain&lt;&#x2F;code&gt; 为实际值。&lt;&#x2F;p&gt;
+&lt;p&gt;验证 Webhook 设置：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;curl https:&#x2F;&#x2F;api.telegram.org&#x2F;bot$TELE_BOT_TOKEN&#x2F;getWebhookInfo
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;3-cloudflare-worker-shi-yong-zhu-yi-shi-xiang&quot;&gt;3 Cloudflare Worker 使用注意事项&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;环境变量访问&lt;&#x2F;strong&gt;：使用 &lt;code&gt;globalThis.&lt;&#x2F;code&gt; 前缀访问环境变量，例如：&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;globalThis&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TELE_BOT_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;ol start=&quot;2&quot;&gt;
+&lt;li&gt;&lt;strong&gt;代码保存&lt;&#x2F;strong&gt;：有时保存可能不会立即生效，需要重新进入并粘贴代码。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;调试&lt;&#x2F;strong&gt;：可以切换到 HTTP 功能，输入测试数据进行调试。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;部署&lt;&#x2F;strong&gt;：只有在预览模式下才能点击&quot;部署&quot;按钮。HTTP 模式下无法部署。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;通过以上步骤，您就可以成功创建并部署一个基于 Cloudflare Worker 的 Telegram Bot。&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>通过 cloudflare 创建无限数量企业邮箱</title>
+        <published>2024-12-15T21:00:00+08:00</published>
+        <updated>2024-12-15T21:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/cloudflare-resend-gmail/"/>
+        <id>/posts/cloudflare-resend-gmail/</id>
+        
+        <content type="html" xml:base="/posts/cloudflare-resend-gmail/">&lt;p&gt;如何在互联网大善人 cloudflare 那里白嫖无限数量的企业邮箱，这些邮箱既可以收邮件，也可以发邮件。&lt;&#x2F;p&gt;
+&lt;p&gt;可以用来接收网站验证码，注册账户的时候就可以很方便的注册一大堆小号。 还可以把他们当成临时邮箱，与人通信，避免暴露自己真实的邮箱，保护个人隐私。 Cloudflare 是一家提供 CDN、网络安全、DDos 防御和域名服务的公司，人称互联网大善人、赛博活佛。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;yu-ming&quot;&gt;域名&lt;&#x2F;h2&gt;
+&lt;p&gt;使用 Cloudflare 的前提是要有一个域名。关于域名的购买，可以看一下这期视频。&lt;&#x2F;p&gt;
+&lt;p&gt;有了域名以后，我们就把它托管到 Cloudflare 上。我们先登录一下 Cloudflare，没有账号就注册一个。右上角点击添加站点，输入你的域名，&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_1.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;然后点击继续。这里有一些付费的，我们都不要，直接找下面这个免费的，点击继续。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_2.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;更改 DNS (名称服务器)，找到这两个名称服务器。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_3.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们需要去购买域名的网站更改，把原有的 DNS 地址全部删掉，然后写入之前分配的两个服务器，点击保存。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_4.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们再回到 Cloudflare，点击立即检查，然后点击继续。这里什么都不用动，直接开始使用就可以了。&lt;&#x2F;p&gt;
+&lt;p&gt;左上角点击 Cloudflare 的图标，回到首页，域名这里显示一个绿勾和有效，那就可以开始直接使用了。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_5.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;shou-you-jian&quot;&gt;收邮件&lt;&#x2F;h2&gt;
+&lt;p&gt;我们先点击域名，进来以后选择左侧电子邮件，选择电子邮件路由。&lt;&#x2F;p&gt;
+&lt;p&gt;第一次进来以后，会有一个新手设置，点击取消新手设置，点击启用电子邮件路由。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_6.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;这里面有 4 个 DNS 值，我们点击添加记录并启用，Cloudflare 就会自动添加上这 4 个 DNS 记录。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_7.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们再点击路由规则，这里有一个 catch-all 地址，我们点击右侧的编辑，&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_8.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;点击发送到电子邮件。这里填写一个自己的电子邮箱，然后点击保存。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_9.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;保存好以后，这里会出现一个待验证。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_10.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Cloudflare 会发送一封验证邮件到这个地址，进入邮箱找到邮件并点击验证链接。刷新一下页面，打上一个绿勾，就配置完成了。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_11.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;这个配置的意思是所有发送到当前域名下的邮件都会自动转到这个 163 邮箱&lt;&#x2F;strong&gt;。这样就实现了无限多个邮箱可以收邮件。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;fa-you-jian&quot;&gt;发邮件&lt;&#x2F;h2&gt;
+&lt;p&gt;使用邮箱发送邮件，使用的服务是**&lt;a href=&quot;https:&#x2F;&#x2F;resend.com&quot;&gt;resend.com&lt;&#x2F;a&gt;**，这也是一个免费的服务，没有账号请自行注册。&lt;&#x2F;p&gt;
+&lt;p&gt;选择左侧的 API Keys，点击 create API Key，名字可填写你的域名，下面两个保持默认，点击添加。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_12.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_13.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;就会获得一个 API Key，把它保存好。这里有一个域名，我们需要把域名也添加到这个网站上，就是之前托管到 Cloudflare 的那个域名。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_14.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;好，这一步是重点&lt;&#x2F;strong&gt;。这里给了 3 个 DNS 记录，我们需要把这个记录填回 Cloudflare&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_15.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;回到 cloudflare&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_16.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_17.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;我们回到 resend，有一个按钮 verify DNS records，我们点击一下，检查我们之前的配置是否正确。等校验完，页面标成绿色，那就配置完成了。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;cloudflare_18.jpg&quot; alt=&quot;image&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shi-yong-python-fa-you-jian&quot;&gt;使用 Python 发邮件&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;python&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-python &quot;&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# 先安装依赖
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# pip install resend
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;import &lt;&#x2F;span&gt;&lt;span&gt;resend
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# 这里换成自己的resend API Key
+&lt;&#x2F;span&gt;&lt;span&gt;resend.api_key = &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;re_xxxxxxxxxxxxxxxxxxxxxxx&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;params: resend.Emails.SendParams = {
+&lt;&#x2F;span&gt;&lt;span&gt;   &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# 发件人可以是自己域名下的任何一个人
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;from&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;admin@你的域名&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;to&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;geloves@163.com&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;],
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;subject&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;hi&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;,
+&lt;&#x2F;span&gt;&lt;span&gt;  &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;html&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&amp;lt;strong&amp;gt;it works!&amp;lt;&#x2F;strong&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;email = resend.Emails.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;send&lt;&#x2F;span&gt;&lt;span&gt;(params)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;print&lt;&#x2F;span&gt;&lt;span&gt;(email)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shi-yong-curl-fa-you-jian&quot;&gt;使用 cURL 发邮件&lt;&#x2F;h3&gt;
+&lt;p&gt;Authorization 换成自己的 resend API Key&lt;&#x2F;p&gt;
+&lt;p&gt;发件人可以是自己域名下的任何一个人&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;export RESEND_API_KEY=&amp;quot;re_xxxxxxxxxxxxxxxxxxxxxxx&amp;quot;
+&lt;&#x2F;span&gt;&lt;span&gt;curl -X POST &amp;#39;https:&#x2F;&#x2F;api.resend.com&#x2F;emails&amp;#39; -H &amp;quot;Authorization: Bearer ${RESEND_API_KEY}&amp;quot; -H &amp;#39;Content-Type: application&#x2F;json&amp;#39; -d &amp;#39;{&amp;quot;from&amp;quot;: &amp;quot;Admin &amp;lt;admin@你的域名&amp;gt;&amp;quot;,&amp;quot;to&amp;quot;:[&amp;quot;test@163.com&amp;quot;],&amp;quot;subject&amp;quot;:&amp;quot;hi&amp;quot;,&amp;quot;text&amp;quot;: &amp;quot;it works!&amp;quot;}&amp;#39;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>抖音视频下载与音视频转码工具</title>
+        <published>2024-11-19T22:00:00+08:00</published>
+        <updated>2024-11-19T22:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/douyin-downloader/"/>
+        <id>/posts/douyin-downloader/</id>
+        
+        <content type="html" xml:base="/posts/douyin-downloader/">&lt;p&gt;Downloader 是一个跨平台的抖音视频下载器，目前支持 macOS 与 windows，并具有音视频转码功能。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;由 Tauri2 + Rust + React + Typescript 开发&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xia-zai-an-zhuang&quot;&gt;下载安装&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bin.616161616.xyz&#x2F;Downloader_1.0.5_aarch64.dmg&quot;&gt;macOS-apple&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bin.616161616.xyz&#x2F;Downloader_1.0.5_x64.dmg&quot;&gt;macOS-intel&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;bin.616161616.xyz&#x2F;Downloader_1.0.5_x64-setup.exe&quot;&gt;windows-x64&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;MacOS 用户安装程序时出现以下警告是正常的, 请点击取消即可&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_1.png&quot; alt=&quot;image-1&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;然后在设置中允许打开就 OK 了&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_2.png&quot; alt=&quot;image-2&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;然后会再次弹出一次警告&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_3.png&quot; alt=&quot;image-3&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;程序打开报损坏则继续在设置中允许打开或者在终端输入以下命令&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;xattr -c&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;Applications&#x2F;Downloader.app
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;cookie-huo-qu-jiao-cheng&quot;&gt;Cookie 获取教程&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;打开浏览器，访问 &lt;a href=&quot;https:&#x2F;&#x2F;www.douyin.com&quot;&gt;抖音&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;登录抖音账号&lt;&#x2F;li&gt;
+&lt;li&gt;按 &lt;strong&gt;&lt;em&gt;F12&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 打开开发人员工具&lt;&#x2F;li&gt;
+&lt;li&gt;选择 &lt;strong&gt;&lt;em&gt;网络&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;勾选 &lt;strong&gt;&lt;em&gt;保留日志&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;在 &lt;strong&gt;&lt;em&gt;筛选器&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 输入框输入 &lt;strong&gt;&lt;em&gt;cookie-name:odin_tt&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;访问 &lt;strong&gt;&lt;em&gt;抖音网页版&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 中任意用户主页 或者访问 &lt;a href=&quot;https:&#x2F;&#x2F;www.douyin.com&#x2F;follow&quot;&gt;关注页&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;在开发人员工具窗口选择任意一个数据包(如果无数据包，重复步骤 7)&lt;&#x2F;li&gt;
+&lt;li&gt;全选并复制 &lt;strong&gt;&lt;em&gt;Cookie&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt; 的值&lt;&#x2F;li&gt;
+&lt;li&gt;运行程序 ，根据提示写入 &lt;strong&gt;&lt;em&gt;Cookie&lt;&#x2F;em&gt;&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;jie-tu-shi-li&quot;&gt;截图示例&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;downloader_cookie.png&quot; alt=&quot;cookie&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>集成 Alacritty 和 Tmux 打造超级终端</title>
+        <published>2022-09-26T21:56:00+08:00</published>
+        <updated>2022-09-26T21:56:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/alacritty-integration-with-tmux/"/>
+        <id>/posts/alacritty-integration-with-tmux/</id>
+        
+        <content type="html" xml:base="/posts/alacritty-integration-with-tmux/">&lt;p&gt;Alacritty 是一个使用 OpenGL 的跨平台、GPU 加速的终端仿真器。它专注于性能和简单性，甚至没有标签或窗口拆分等功能。&lt;&#x2F;p&gt;
+&lt;p&gt;Tmux 是一个用于在终端窗口中运行多个终端会话的工具，即终端复用软件（terminal multiplexer）。在 tmux 中可以根据不同的工作任务创建不同的会话，每个会话又可以创建多个窗口来完成不同的工作，每个窗口又可以分割成很多窗格。&lt;&#x2F;p&gt;
+&lt;p&gt;将 alacritty 和 tmux 深度集成到自己的工作流之中，打造出一个顺心应手、高效率、可定制的超级终端。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;te-xing&quot;&gt;特性&lt;&#x2F;h2&gt;
+&lt;p&gt;此次深度集成，拥有 alacritty 和 tmux 各自的优点。在 macOS 完全可以代替 iTerm2.app 和 Terminal.app，达到了跨平台、高可用性、统一的超级终端。拥有以下特性：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;快速便捷的、人体工学设计的快捷键。&lt;&#x2F;li&gt;
+&lt;li&gt;简洁实用的、美丽大方的终端主题。&lt;&#x2F;li&gt;
+&lt;li&gt;所有新建的窗格、选项卡使用当前的工作目录。&lt;&#x2F;li&gt;
+&lt;li&gt;本地会话与 SSH 远程会话一视同仁。&lt;&#x2F;li&gt;
+&lt;li&gt;自动重连的 SSH 远程会话。&lt;&#x2F;li&gt;
+&lt;li&gt;灵活的脚本定制化。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;看动图直观感受一下：
+&lt;img src=&quot;&#x2F;images&#x2F;demo_alacritty_shortcuts.gif&quot; alt=&quot;demo alacritty shortcuts&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;an-zhuang&quot;&gt;安装&lt;&#x2F;h2&gt;
+&lt;p&gt;可以通过使用 Linux、BSD、macOS 和 Windows 上的各种包管理器来安装 alacritty 和 tmux，并安装配套所需要的字体和工具。目前已在 macOS 顺畅使用，以下安装步骤以 macOS 为平台。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;alacritty-an-zhuang&quot;&gt;Alacritty 安装&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --cask&lt;&#x2F;span&gt;&lt;span&gt; alacritty
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;tmux-an-zhuang&quot;&gt;Tmux 安装&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install tmux
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;zi-ti-an-zhuang&quot;&gt;字体安装&lt;&#x2F;h3&gt;
+&lt;p&gt;我选择打过 Nerd Font 字体补丁的 JetBrains Mono 作为终端的默认字体。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; tap homebrew&#x2F;cask-fonts
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install font-jetbrains-mono
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install font-jetbrains-mono-nerd-font
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;fish-an-zhuang&quot;&gt;Fish 安装&lt;&#x2F;h3&gt;
+&lt;p&gt;我选择 fish 作为终端的默认 Shell。（可选，可修改配置使用其他 Shell）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install fish
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;fzf-an-zhuang&quot;&gt;Fzf 安装&lt;&#x2F;h3&gt;
+&lt;p&gt;快速模糊查找。（可选，仅在命令菜单和会话菜单中使用）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install fzf
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;autossh-an-zhuang&quot;&gt;Autossh 安装&lt;&#x2F;h3&gt;
+&lt;p&gt;自动重连的 SSH 客户端。（可选，可以修改配置使用普通的 SSH 客户端）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install autossh
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;pei-zhi&quot;&gt;配置&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;alacritty-pei-zhi&quot;&gt;Alacritty 配置&lt;&#x2F;h3&gt;
+&lt;p&gt;Alacritty 默认使用的配置文件路径 &lt;code&gt;~&#x2F;.config&#x2F;alacritty&#x2F;alacritty.yml&lt;&#x2F;code&gt;。
+我正在使用的配置文件：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;qingshan&#x2F;dotfiles&#x2F;blob&#x2F;main&#x2F;alacritty&#x2F;alacritty.yml&quot;&gt;alacritty.yml&lt;&#x2F;a&gt;。
+运行下面的命令可以把我的配置文件自动下载并使用：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -fLo ~&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;.config&#x2F;alacritty&#x2F;alacritty.yml&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --create-dir &lt;&#x2F;span&gt;&lt;span&gt;\
+&lt;&#x2F;span&gt;&lt;span&gt;    https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;alacritty&#x2F;alacritty.yml
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;tmux-pei-zhi&quot;&gt;Tmux 配置&lt;&#x2F;h3&gt;
+&lt;p&gt;Tmux 默使用的配置文件路径 &lt;code&gt;~&#x2F;.tmux.conf&lt;&#x2F;code&gt;
+我正在使用的配置文件：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;qingshan&#x2F;dotfiles&#x2F;blob&#x2F;main&#x2F;.tmux.conf&quot;&gt;.tmux.conf&lt;&#x2F;a&gt;。
+运行下面的命令可以把我的配置文件自动下载并使用：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -fLo ~&lt;&#x2F;span&gt;&lt;span&gt;&#x2F;.tmux.conf \
+&lt;&#x2F;span&gt;&lt;span&gt;    https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;.tmux.conf
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;kuai-jie-jian-chong-tu&quot;&gt;快捷键冲突&lt;&#x2F;h3&gt;
+&lt;p&gt;绑定的快捷键与 alacritty 和 macOS Screenshot 默认的一些快捷键冲突，我选择调整冲突的这些默认快捷键。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Alacritty 有两个快捷键冲突：&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;H&lt;&#x2F;kbd&gt; 和 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Q&lt;&#x2F;kbd&gt;；&lt;&#x2F;li&gt;
+&lt;li&gt;macOS Screenshot 有多个数字快捷键冲突：&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;3&lt;&#x2F;kbd&gt; 到 &lt;kbd&gt;6&lt;&#x2F;kbd&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h4 id=&quot;alacritty-kuai-jie-jian-chong-tu&quot;&gt;Alacritty 快捷键冲突&lt;&#x2F;h4&gt;
+&lt;p&gt;在 &lt;code&gt;System Preferences&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Keyboard&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Shortcuts&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;App Shortcuts&lt;&#x2F;code&gt; 下点击 &lt;code&gt;+&lt;&#x2F;code&gt; 按钮，添加两项菜单主题对应的快捷键：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Hide alacritty&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Quit alacritty&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;定义的快捷键只要不是冲突的那两个快捷键都可以，添加后的结果如下：
+&lt;img src=&quot;&#x2F;images&#x2F;remap_alacritty_shortcuts.png&quot; alt=&quot;remap_alacritty_shortcuts&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;macos-screenshot-kuai-jie-jian-chong-tu&quot;&gt;macOS Screenshot 快捷键冲突&lt;&#x2F;h4&gt;
+&lt;p&gt;在 &lt;code&gt;System Preferences&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Keyboard&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Shortcuts&lt;&#x2F;code&gt; &#x2F; &lt;code&gt;Screenshots&lt;&#x2F;code&gt; 下取消所有 Screenshot 的快捷键。因为我可以直接运行 Screenshot.app 来截图。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;shi-yong&quot;&gt;使用&lt;&#x2F;h2&gt;
+&lt;p&gt;绑定快捷键使用&lt;kbd&gt;Command&lt;&#x2F;kbd&gt;或者&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt;作为修饰键。部分快捷键与 iTerm2.app 和 Terminal.app 的绑定对应，部分快捷键与我的 i3 的绑定对应。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ji-ben-cao-zuo&quot;&gt;基本操作&lt;&#x2F;h3&gt;
+&lt;p&gt;新建&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;D&lt;&#x2F;kbd&gt; 垂直分割窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Return&lt;&#x2F;kbd&gt; 水平分割窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;T&lt;&#x2F;kbd&gt; 新建选项卡&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;关闭&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;W&lt;&#x2F;kbd&gt; 关闭窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;W&lt;&#x2F;kbd&gt; 关闭选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Q&lt;&#x2F;kbd&gt; 关闭窗口&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;访问窗格&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;H&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Left&lt;&#x2F;kbd&gt; 访问左边的窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;J&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Up&lt;&#x2F;kbd&gt; 访问上面的窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;K&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Down&lt;&#x2F;kbd&gt; 访问下面的窗格&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;L&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Right&lt;&#x2F;kbd&gt; 访问右边的窗格&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;访问选项卡&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;1&lt;&#x2F;kbd&gt; 到 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;9&lt;&#x2F;kbd&gt; - 按数字切换选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;b&lt;&#x2F;kbd&gt; 切换到最近一次访问的选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;[&lt;&#x2F;kbd&gt; 切换到上一个选项卡&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;]&lt;&#x2F;kbd&gt; 切换到下一个选项卡&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;访问窗口&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;`&lt;&#x2F;kbd&gt;：切换窗口。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;bu-ju-cao-zuo&quot;&gt;布局操作&lt;&#x2F;h3&gt;
+&lt;p&gt;调整窗格大小&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;H&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Left&lt;&#x2F;kbd&gt; 向左边的窗格推进&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;J&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Up&lt;&#x2F;kbd&gt; 向上面的窗格推进&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;K&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Down&lt;&#x2F;kbd&gt; 向下面的窗推进&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;L&lt;&#x2F;kbd&gt; 或者 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Right&lt;&#x2F;kbd&gt; 向右边的窗格推进&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;移动窗格到选项卡&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;1&lt;&#x2F;kbd&gt; 到 9: 将窗格移动到指定的选项卡中。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;缩放窗格&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Z&lt;&#x2F;kbd&gt; 缩放当前窗格。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;调整窗格布局&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Z&lt;&#x2F;kbd&gt;：使用预设置的五种布局重新调整窗格。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;修改选项卡名称&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;,&lt;&#x2F;kbd&gt;：修改选项卡名称。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;yan-bo-shu-ru&quot;&gt;广播输入&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;I&lt;&#x2F;kbd&gt;：广播输入到当前选项卡的所有窗格。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;tmux-ming-ling&quot;&gt;Tmux 命令&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;I&lt;&#x2F;kbd&gt;：输入 tmux 命令。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;zi-ti-cao-zuo&quot;&gt;字体操作&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;+&lt;&#x2F;kbd&gt;：调整更大的字体&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;-&lt;&#x2F;kbd&gt;：调整更小的字体&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;0&lt;&#x2F;kbd&gt;：恢复默认大小的字体&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;fu-zhi-mo-shi&quot;&gt;复制模式&lt;&#x2F;h3&gt;
+&lt;h4 id=&quot;vi-fu-zhi-mo-shi&quot;&gt;Vi 复制模式&lt;&#x2F;h4&gt;
+&lt;p&gt;查找关键词并进入 Vi 复制模式：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;F&lt;&#x2F;kbd&gt;：进入 Vi 复制模式，从上往下的方向查找关键词。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;F&lt;&#x2F;kbd&gt;：进入 Vi 复制模式，从下往上的方向查找关键词。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;进入 Vi 复制模式后：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;v&lt;&#x2F;kbd&gt; 按字选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;V&lt;&#x2F;kbd&gt; 按行选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Ctrl&lt;&#x2F;kbd&gt; + &lt;kbd&gt;v&lt;&#x2F;kbd&gt; 按块状选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Esc&lt;&#x2F;kbd&gt; 取消选择&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;A&lt;&#x2F;kbd&gt; 复制选择的文本追加到剪贴板，并退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;D&lt;&#x2F;kbd&gt; 复制当前行到行尾的文本到剪贴板，并退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;y&lt;&#x2F;kbd&gt; 复制选择的文本到剪贴板，并退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Y&lt;&#x2F;kbd&gt; 复制选择的文本到剪贴板，并保持 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;q&lt;&#x2F;kbd&gt; 退出 Vi 复制模式。&lt;&#x2F;li&gt;
+&lt;li&gt;还有更多，请查文档。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h4 id=&quot;shu-biao-mo-shi&quot;&gt;鼠标模式&lt;&#x2F;h4&gt;
+&lt;p&gt;使用鼠标选择文本，会自动复制到操作系统的剪贴板。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;jin-jie&quot;&gt;进阶&lt;&#x2F;h3&gt;
+&lt;h4 id=&quot;kuai-jie-ming-ling&quot;&gt;快捷命令&lt;&#x2F;h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;R&lt;&#x2F;kbd&gt;: 弹出快捷命令菜单，并在当前窗格执行选择的命令。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;D&lt;&#x2F;kbd&gt;：弹出快捷命令菜单，并在新建垂直分割的窗格执行选择的命令。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Retrun&lt;&#x2F;kbd&gt;：弹出快捷命令菜单，并在新建水平分割的窗格执行选择的命令。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;T&lt;&#x2F;kbd&gt;：弹出快捷命令菜单，并在新建的选项卡执行选择的命令。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;快捷命令弹出一个窗口，可以选择需要执行的命令。快捷命令列表由自定义一个可执行的脚本文件 &lt;code&gt;tmux-commands&lt;&#x2F;code&gt; 负责提供。脚本文件放到 PATH 路径中。
+可以参考我的脚本文件：&lt;a href=&quot;https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;bin&#x2F;tmux-commands&quot;&gt;&lt;code&gt;tmux-commands&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;。
+脚本文件内容如下（命令列表内容根据需要自行修改）：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;#!&#x2F;usr&#x2F;bin&#x2F;env bash
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;fzf --reverse --header&lt;&#x2F;span&gt;&lt;span&gt; Commands) &amp;lt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;EOF
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;cargo run
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;cargo test
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ssh lab
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;EOF
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;直接执行这个命令确认一下：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux-commands
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;从快捷命令中选择一个命令，会直接输出打印出来。确认没有问题之后，直接通过上面的快捷键呼叫。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;kuai-jie-hui-hua&quot;&gt;快捷会话&lt;&#x2F;h4&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;N&lt;&#x2F;kbd&gt;：弹出窗口显示本地会话列表，并在当前窗口切换到选择的会话中。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; + &lt;kbd&gt;N&lt;&#x2F;kbd&gt;：弹出窗口显示本地会话和远程会话列表，并新建一个窗口切换到选择的会话中。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;快捷会话默认从 tmux 加载会话列表。也可以自定义一个可执行的脚本文件：&lt;code&gt;tmux-sessions&lt;&#x2F;code&gt;，放到 PATH 路径中。
+可以参考我的脚本文件：&lt;a href=&quot;https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;qingshan&#x2F;dotfiles&#x2F;main&#x2F;bin&#x2F;tmux-sessions&quot;&gt;&lt;code&gt;tmux-sessions&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;注意：远程服务器上也应该有 &lt;code&gt;tmux-commands&lt;&#x2F;code&gt; 和 &lt;code&gt;tmux-sessions&lt;&#x2F;code&gt; 两个脚本文件。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bao-cun-wen-jian&quot;&gt;保存文件&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;S&lt;&#x2F;kbd&gt;：输出 Vim 保存文件的指令 &lt;code&gt;&amp;lt;ESC&amp;gt;:w&amp;lt;CR&amp;gt;&lt;&#x2F;code&gt;，注意要在 Vim 下使用。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;时不时的保存文件是个好习惯。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;tmux-kuai-jie-jian&quot;&gt;Tmux 快捷键&lt;&#x2F;h3&gt;
+&lt;p&gt;因为通常 tmux 绑定的快捷键前缀 &lt;code&gt;Ctrl-a&lt;&#x2F;code&gt; 和 &lt;code&gt;Ctrl-b&lt;&#x2F;code&gt; 经常在 Shell 或者 Vim 中有使用，所以我重新定义的 tmux 的 快捷键前缀为 &lt;kbd&gt;Ctrl&lt;&#x2F;kbd&gt; + &lt;kbd&gt;\&lt;&#x2F;kbd&gt;。
+选择的原因是这个快捷键很少被其他应用程序使用，另外一个原因是在我的集成中没有太多机会使用 tmux 的快捷键，所以选择一个不冲突的快捷键前缀对我来说是最好的选择。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;pei-zhi-shuo-ming&quot;&gt;配置说明&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;pei-zhi-zhong-duan-lei-xing&quot;&gt;配置终端类型&lt;&#x2F;h3&gt;
+&lt;p&gt;给 alacritty 追加环境变量：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TERM&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;xterm-256color
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-zi-ti&quot;&gt;配置字体&lt;&#x2F;h3&gt;
+&lt;p&gt;指定使用 JetBrains Mono 字体，字体大小设置为 14 点数。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;font&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;normal&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Regular
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bold&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Bold
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;italic&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Italic
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;bold_italic&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;family&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;JetBrainsMono Nerd Font
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;style&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Bold Italic
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;size&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;14
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-chuang-kou&quot;&gt;配置窗口&lt;&#x2F;h3&gt;
+&lt;p&gt;Alacritty 启动的时候使用全屏模式，但是又不独占一个桌面。窗口不需要任何裱装。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;window&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;startup_mode&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;SimpleFullscreen
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;decorations&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;none
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-shell&quot;&gt;配置 Shell&lt;&#x2F;h3&gt;
+&lt;p&gt;使用 Fish 作为默认的 Shell。启动的时候总是直接创建或使用名为 &lt;code&gt;main&lt;&#x2F;code&gt; 的 tmux 会话。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;shell&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;program&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;fish
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;args&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--login
+&lt;&#x2F;span&gt;&lt;span&gt;    - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--command
+&lt;&#x2F;span&gt;&lt;span&gt;    - &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tmux new-session -A -D -s main&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;pei-zhi-kuai-jie-jian-ying-she&quot;&gt;配置快捷键映射&lt;&#x2F;h3&gt;
+&lt;p&gt;可以映射到 tmux 的绑定：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;T&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mods&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Command&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chars&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;\x1c&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;c&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# new tab with default shell
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;甚至 Vim 指令：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;S&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mods&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Command&lt;&#x2F;span&gt;&lt;span&gt;,       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chars&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;\x1b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;:w&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;\x0a&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Type &amp;lt;escape&amp;gt;:w&amp;lt;enter&amp;gt; to save vim
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;还可以可以映射运行程序：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;N&lt;&#x2F;span&gt;&lt;span&gt;,        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;mods&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Command|Shift&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;command&lt;&#x2F;span&gt;&lt;span&gt;: { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;program&lt;&#x2F;span&gt;&lt;span&gt;: &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;alacritty&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;args&lt;&#x2F;span&gt;&lt;span&gt;: [&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;msg&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;create-window&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;-e&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;&#x2F;usr&#x2F;local&#x2F;bin&#x2F;fish&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--login&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;--command&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;tmux-sessions --all&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;] } } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# open session in new window with all sessions menu across servers
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;jiang-li&quot;&gt;奖励&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;alacritty-tu-biao&quot;&gt;Alacritty 图标&lt;&#x2F;h3&gt;
+&lt;p&gt;Alacritty 默认的图标在 Dock 上与其他应用程序的图标有点格格不入。但是作者不愿意调整图标上，那我只好自己动手调整。
+参考：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alacritty&#x2F;alacritty&#x2F;issues&#x2F;3926&quot;&gt;issue:3926&lt;&#x2F;a&gt;
+下载 &lt;a href=&quot;https:&#x2F;&#x2F;www.dropbox.com&#x2F;s&#x2F;0i4ez0el7paksg3&#x2F;Alacritty.icns?dl=0&quot;&gt;Alacritty.icns&lt;&#x2F;a&gt; 并更新 Alacritty.app&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shu-ru-fa-tui-ge-jian&quot;&gt;输入法退格键&lt;&#x2F;h3&gt;
+&lt;p&gt;macOS 下输入法退格键会删除已输入内容的问题：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alacritty&#x2F;alacritty&#x2F;issues&#x2F;1606&quot;&gt;issues:1606&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;官方给出的临时解决方案为：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;yaml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yaml &quot;&gt;&lt;code class=&quot;language-yaml&quot; data-lang=&quot;yaml&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key_bindings&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  - { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Back&lt;&#x2F;span&gt;&lt;span&gt;,                          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span&gt;:  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ReceiveChar     &lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;alt-zu-he-jian-ying-she&quot;&gt;Alt 组合键映射&lt;&#x2F;h3&gt;
+&lt;p&gt;所有以 &lt;kbd&gt;Alt&lt;&#x2F;kbd&gt; 和 &lt;kbd&gt;Alt&lt;&#x2F;kbd&gt; + &lt;kbd&gt;Shift&lt;&#x2F;kbd&gt; 为修饰键的按键都映射为 Esc 前缀键码。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ide-bu-ju&quot;&gt;IDE 布局&lt;&#x2F;h3&gt;
+&lt;p&gt;写一个脚本并执行实现自动创建类似 IDE 布局：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; split-window&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -v -p&lt;&#x2F;span&gt;&lt;span&gt; 30
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; send-keys &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;echo &amp;#39;run&amp;#39;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; enter
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; split-window&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -h -p&lt;&#x2F;span&gt;&lt;span&gt; 50
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tmux&lt;&#x2F;span&gt;&lt;span&gt; send-keys &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;echo &amp;#39;preview&amp;#39;&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; enter
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;hou-xu&quot;&gt;后续&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;input disabled=&quot;&quot; type=&quot;checkbox&quot;&#x2F;&gt;
+加上 tmux-resurrect 插件，断电或者电脑重启后，都可以快速进入基本工作环境。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;input disabled=&quot;&quot; type=&quot;checkbox&quot;&#x2F;&gt;
+使用 &lt;code&gt;tmux display-popup&lt;&#x2F;code&gt; 实现快捷方便的弹出窗口。快捷键可以考虑映射 &lt;kbd&gt;Command&lt;&#x2F;kbd&gt; + &lt;kbd&gt;F1&lt;&#x2F;kbd&gt; 到 &lt;kbd&gt;F12&lt;&#x2F;kbd&gt;。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;can-kao-zi-liao&quot;&gt;参考资料&lt;&#x2F;h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;arslan.io&#x2F;2018&#x2F;02&#x2F;05&#x2F;gpu-accelerated-terminal-alacritty&#x2F;&quot;&gt;Alacritty integration with Tmux&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.joshmedeski.com&#x2F;posts&#x2F;macos-keyboard-shortcuts-for-tmux&quot;&gt;macOS Keyboard Shortcuts for tmux&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;alacritty&#x2F;alacritty&#x2F;blob&#x2F;master&#x2F;docs&#x2F;features.md&quot;&gt;Alacritty&#x27;s documentation&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;man7.org&#x2F;linux&#x2F;man-pages&#x2F;man1&#x2F;tmux.1.html&quot;&gt;tmux Manual Pages&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>使用 Zola 和 Github Pages 搭建网站</title>
+        <published>2022-09-05T21:05:00+08:00</published>
+        <updated>2022-09-05T21:05:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/setup-website-with-zola/"/>
+        <id>/posts/setup-website-with-zola/</id>
+        
+        <content type="html" xml:base="/posts/setup-website-with-zola/">&lt;p&gt;使用 Zola 作为静态网站生成器搭建个人网站和博客，并使用 Github Actions 部署到 Github Pages。&lt;&#x2F;p&gt;
+&lt;p&gt;Zola 是一个用 Rust 编写的静态网站生成器，使用动态模板将 Markdown 格式的内容转换为静态 HTML 页面。使用 Github Actions 部署到 Github Pages 是 GitHub 上个月刚刚发布的新功能。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;xin-jian-github-cang-ku&quot;&gt;新建 Github 仓库&lt;&#x2F;h3&gt;
+&lt;p&gt;首先创建一个名为 &lt;code&gt;&amp;lt;username&amp;gt;.github.io&lt;&#x2F;code&gt; 的仓库：&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;images&#x2F;1697204176980.jpg&quot; alt=&quot;create repository&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;新建出来的是一个空的仓库，把它 clone 到本地：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; clone https:&#x2F;&#x2F;github.com&#x2F;&amp;lt;username&amp;gt;&#x2F;&amp;lt;username&amp;gt;.github.io
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;接下来的所有操作都在这个文件夹内进行：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;cd &lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;username&amp;gt;.github.io
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;an-zhuang-zola&quot;&gt;安装 Zola&lt;&#x2F;h3&gt;
+&lt;p&gt;使用以下命令安装 Zola。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;macos&quot;&gt;macOS&lt;&#x2F;h4&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;brew&lt;&#x2F;span&gt;&lt;span&gt; install zola
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h4 id=&quot;linux&quot;&gt;Linux&lt;&#x2F;h4&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;curl -sL&lt;&#x2F;span&gt;&lt;span&gt; https:&#x2F;&#x2F;github.com&#x2F;getzola&#x2F;zola&#x2F;releases&#x2F;download&#x2F;v0.19.2&#x2F;zola-v0.19.2-x86_64-unknown-linux-gnu.tar.gz | &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;tar&lt;&#x2F;span&gt;&lt;span&gt; xz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -C&lt;&#x2F;span&gt;&lt;span&gt; &#x2F;usr&#x2F;local&#x2F;bin
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shi-yong-zola&quot;&gt;使用 Zola&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;运行命令 &lt;code&gt;zola init&lt;&#x2F;code&gt; 进行初始化。
+zola init 完会创建配置文件 config.toml 和几个文件夹:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;content&#x2F; 放所有的文章&lt;&#x2F;li&gt;
+&lt;li&gt;sass&#x2F; 如字面意义放 sass&lt;&#x2F;li&gt;
+&lt;li&gt;templates&#x2F; 下面放 Tera 模板，即 Zola 使用的 HTML 模板引擎。&lt;&#x2F;li&gt;
+&lt;li&gt;content&#x2F; 放我们的文章&lt;&#x2F;li&gt;
+&lt;li&gt;static&#x2F; 图片等静态资源&lt;&#x2F;li&gt;
+&lt;li&gt;themes&#x2F; 主题&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;根据文档说明进行定制主题、模版。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;补充正文内容。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;运行命令 &lt;code&gt;zola serve&lt;&#x2F;code&gt; 进行本地预览，在浏览器中打开 &lt;code&gt;http:&#x2F;&#x2F;127.0.0.1:1111&lt;&#x2F;code&gt; 就可以看到网站了。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;pei-zhi-github-actions&quot;&gt;配置 Github Actions&lt;&#x2F;h3&gt;
+&lt;p&gt;创建 Github Actions 工作流文件 &lt;code&gt;.github&#x2F;workflows&#x2F;deploy.yml&lt;&#x2F;code&gt;。此工作流程负责构建网站内容并发布到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意: 将工作流权限更改为可读写, 以便 GitHub Actions 工作流自动发布内容到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。
+在仓库中, 点击 Settings -&amp;gt; Actions -&amp;gt; General -&amp;gt; Workflow permissions, 选择 &lt;code&gt;Read and write permissions&lt;&#x2F;code&gt; 并保存&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;pre data-lang=&quot;yml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-yml &quot;&gt;&lt;code class=&quot;language-yml&quot; data-lang=&quot;yml&quot;&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;on&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;push&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;branches&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;main
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Build and deploy GH Pages
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;jobs&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;build&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;runs-on&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;ubuntu-22.04
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;github.ref == &amp;#39;refs&#x2F;heads&#x2F;main&amp;#39;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;steps&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Checkout
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;actions&#x2F;checkout@v4
+&lt;&#x2F;span&gt;&lt;span&gt;      - &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Deploy
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;uses&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;shalzz&#x2F;zola-deploy-action@v0.19.2
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# Target branch
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;PAGES_BRANCH&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;gh-pages
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;BUILD_DIR&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;GITHUB_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;${{ secrets.GITHUB_TOKEN }}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个工作流程文件执行两项作业：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;actions&#x2F;checkout&lt;&#x2F;code&gt; 下载仓库的副本。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;zola-deploy-action&lt;&#x2F;code&gt; 构建页面文件并发布到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;tui-song-dai-ma&quot;&gt;推送代码&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; add&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; --all
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; commit&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -m &lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Initial commit&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git&lt;&#x2F;span&gt;&lt;span&gt; push&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -u&lt;&#x2F;span&gt;&lt;span&gt; origin main
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;第一次提交代码，会触发运行 Github Actions 的工作流程。等待工作流程运行完成之后，网页代码会发布到 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;bu-shu&quot;&gt;部署&lt;&#x2F;h3&gt;
+&lt;p&gt;进入 Github 仓库的 &lt;code&gt;Settings &amp;gt; Pages&lt;&#x2F;code&gt; 页面，在 &lt;code&gt;Build and deployment&lt;&#x2F;code&gt; 下选择 &lt;code&gt;gh-pages&lt;&#x2F;code&gt; 分支进行构建和部署。
+&lt;img src=&quot;&#x2F;images&#x2F;1734496288602.jpg&quot; alt=&quot;source&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;等一会你的网站就可以访问了：&lt;code&gt;https:&#x2F;&#x2F;&amp;lt;username&amp;gt;.github.io&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;zi-ding-yi-yu-ming&quot;&gt;自定义域名&lt;&#x2F;h3&gt;
+&lt;p&gt;参考&lt;a href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;pages&#x2F;configuring-a-custom-domain-for-your-github-pages-site&#x2F;managing-a-custom-domain-for-your-github-pages-site&quot;&gt;文档&lt;&#x2F;a&gt;配置自定义域名的 DNS 记录。&lt;&#x2F;p&gt;
+&lt;p&gt;进入 Github 仓库的 &lt;code&gt;Settings &amp;gt; Pages&lt;&#x2F;code&gt; 页面，设置自定义域名。
+比如说我的自定义域名 &lt;code&gt;www.allens.top&lt;&#x2F;code&gt; 设置成功后，即可访问：&lt;a href=&quot;https:&#x2F;&#x2F;www.allens.top&quot;&gt;&lt;code&gt;https:&#x2F;&#x2F;www.allens.top&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;。
+&lt;img src=&quot;&#x2F;images&#x2F;1697204305581.jpg&quot; alt=&quot;custom domain&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;这将创建一个提交，将 CNAME 文件直接添加到分支的根目录下。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;每次更新时都会重新创建 &lt;code&gt;gh-pages&lt;&#x2F;code&gt;分支，CNAME 文件也会消失，导致域名无法正常解析。
+所以需要在添加域名解析后，将 CNAME 文件添加到本地仓库主分支。zola 需要将 CNAME 添加到 static 目录下，以便构建时将其放在公共文件夹的根目录。&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;h3 id=&quot;zong-jie&quot;&gt;总结&lt;&#x2F;h3&gt;
+&lt;p&gt;我的网站完全按照以上步骤搭建，请访问：&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;gelove&#x2F;gelove.github.io&quot;&gt;gelove&#x2F;gelove.github.io&lt;&#x2F;a&gt; 查看源代码。&lt;&#x2F;p&gt;
+&lt;p&gt;这次我的网站搭建过程，也是一个很好的学习实践。我学习到了：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Zola&lt;&#x2F;li&gt;
+&lt;li&gt;Github Pages&lt;&#x2F;li&gt;
+&lt;li&gt;Github Actions&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;can-kao-zi-liao&quot;&gt;参考资料&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.getzola.org&#x2F;documentation&#x2F;&quot;&gt;Zola Docs&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;actions&#x2F;starter-workflows&#x2F;tree&#x2F;main&#x2F;pages&quot;&gt;GitHub Actions starter workflows&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Rust构建同步Redis服务器</title>
+        <published>2022-01-06T21:06:00+08:00</published>
+        <updated>2022-01-06T21:06:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/redis-sync-sever/"/>
+        <id>/posts/redis-sync-sever/</id>
+        
+        <content type="html" xml:base="/posts/redis-sync-sever/">&lt;p&gt;Redis 是一种数据结构服务器，通常用作内存数据存储。Redis 客户端和服务端使用 Redis 序列化协议(REdis Serialization Protocol, RESP)，这是一种简单的基于流的有状态协议。&lt;&#x2F;p&gt;
+&lt;p&gt;RESP 支持各种消息，包括简单字符串、整数、数组及批量字符串等。RESP 中的消息以&lt;code&gt;\r\n&lt;&#x2F;code&gt;字节序列结束。例如，从服务器到客户端到客户端的成功消息被编码并发发送为 &lt;code&gt;+OK\r\n&lt;&#x2F;code&gt;。 &lt;code&gt;+&lt;&#x2F;code&gt;表示成功回复。该命令以 &lt;code&gt;\r\n&lt;&#x2F;code&gt;结尾。若指令查询失败，Redis 服务器将回复 &lt;code&gt;-Nil\r\n&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt; &lt;&#x2F;p&gt;
+&lt;h2 id=&quot;gou-jian-tong-bu-redis-fu-wu-qi&quot;&gt;构建同步 Redis 服务器&lt;&#x2F;h2&gt;
+&lt;p&gt; &lt;&#x2F;p&gt;
+&lt;h3 id=&quot;xiu-gai-pei-zhi-xiang&quot;&gt;修改配置项&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;toml&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-toml &quot;&gt;&lt;code class=&quot;language-toml&quot; data-lang=&quot;toml&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;# rudis_sync&#x2F;Cargo.toml
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;[dependencies]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;lazy_static &lt;&#x2F;span&gt;&lt;span&gt;= &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;1.2.0&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;resp &lt;&#x2F;span&gt;&lt;span&gt;= { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;git &lt;&#x2F;span&gt;&lt;span&gt;= &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;github.com&#x2F;creativcoder&#x2F;resp&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt; &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;lazy_static：将使用它来存储我们的内存数据库。&lt;&#x2F;li&gt;
+&lt;li&gt;resp: resp 第三方库，用它解析来自客户端的字节流。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt; &lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ju-ti-shi-xian&quot;&gt;具体实现&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; rudis_sync&#x2F;src&#x2F;main.rs
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;lazy_static::lazy_static;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;resp::Decoder;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::collections::HashMap;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::env;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::io::{BufReader, Write};
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::net::Shutdown;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::net::{TcpListener, TcpStream};
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::sync::Mutex;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;std::thread;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; use std::time::Duration;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;mod &lt;&#x2F;span&gt;&lt;span&gt;commands;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use crate&lt;&#x2F;span&gt;&lt;span&gt;::commands::process_client_request;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;STORE = Mutex&amp;lt;HashMap&amp;lt;String, String&amp;gt;&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 可实现延迟初始化 static 常量
+&lt;&#x2F;span&gt;&lt;span&gt;lazy_static! {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;static ref &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;RUDIS_DB&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;STORE &lt;&#x2F;span&gt;&lt;span&gt;= Mutex::new(HashMap::new());
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; handle_client在stream变量中接收客户端TcpStream 套接字
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handle_client&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;stream&lt;&#x2F;span&gt;&lt;span&gt;: TcpStream) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 将客户端 stream包装到BufReader中
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let mut&lt;&#x2F;span&gt;&lt;span&gt; stream = BufReader::new(stream);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 作为可变引用传递给resp软件包的Decoder::new方法
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; decoder = Decoder::new(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;mut&lt;&#x2F;span&gt;&lt;span&gt; stream).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;decode&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;match&lt;&#x2F;span&gt;&lt;span&gt; decoder {
+&lt;&#x2F;span&gt;&lt;span&gt;        Ok(v) =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 解码成功，调用process_client_request
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; reply = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;process_client_request&lt;&#x2F;span&gt;&lt;span&gt;(v);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 通过在客户端stream上调用write_all将reply写入客户端
+&lt;&#x2F;span&gt;&lt;span&gt;            stream.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;get_mut&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;write_all&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;reply).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;        Err(e) =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 解码失败，Shutdown::Both值关闭客户端套接字连接的读取和写入部分
+&lt;&#x2F;span&gt;&lt;span&gt;            println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Invalid command: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:?}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, e);
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = stream.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;get_mut&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;shutdown&lt;&#x2F;span&gt;&lt;span&gt;(Shutdown::Both);
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;main&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; addr = env::args()
+&lt;&#x2F;span&gt;&lt;span&gt;                .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;skip&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;                .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;next&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;                .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap_or&lt;&#x2F;span&gt;&lt;span&gt;(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;127.0.0.1:6378&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_owned&lt;&#x2F;span&gt;&lt;span&gt;());
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; listener = TcpListener::bind(&amp;amp;addr).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;    println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;rudis_sync listening on &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt; ...&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, addr);
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; listener上调用incoming方法，然后返回新客户端连接迭代器
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt; stream in listener.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;incoming&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; stream = stream.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;        println!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;New connection from: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;{:?}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, stream);
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; thread::sleep(Duration::from_millis(3000))
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 每当建立的客户端连接时，生成一个新线程从主线程转移handle_client调用，从而允许主线程接受其它客户端连接
+&lt;&#x2F;span&gt;&lt;span&gt;        thread::spawn(|| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;handle_client&lt;&#x2F;span&gt;&lt;span&gt;(stream));
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; rudis_sync&#x2F;src&#x2F;commands.rs
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use crate&lt;&#x2F;span&gt;&lt;span&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;RUDIS_DB&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;use &lt;&#x2F;span&gt;&lt;span&gt;resp::Value;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; process_client_request 已经获取解码后的Value，并将其与已解析的查询进行匹配
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;pub fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;process_client_request&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;decoded_msg&lt;&#x2F;span&gt;&lt;span&gt;: Value) -&amp;gt; Vec&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;u8&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; reply = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if let &lt;&#x2F;span&gt;&lt;span&gt;Value::Array(v) = decoded_msg {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;match &lt;&#x2F;span&gt;&lt;span&gt;&amp;amp;v[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;] {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Value::Bulk 将命令包装成字符串
+&lt;&#x2F;span&gt;&lt;span&gt;            Value::Bulk(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;ref&lt;&#x2F;span&gt;&lt;span&gt; s) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt; s == &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;GET&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; || s == &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; =&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;handle_get&lt;&#x2F;span&gt;&lt;span&gt;(v),
+&lt;&#x2F;span&gt;&lt;span&gt;            Value::Bulk(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;ref&lt;&#x2F;span&gt;&lt;span&gt; s) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt; s == &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;SET&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; || s == &amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;set&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot; =&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;handle_set&lt;&#x2F;span&gt;&lt;span&gt;(v),
+&lt;&#x2F;span&gt;&lt;span&gt;            other =&amp;gt; unimplemented!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;{:?} is not supported as of now&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, other),
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        Err(Value::Error(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Invalid Command&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;()))
+&lt;&#x2F;span&gt;&lt;span&gt;    };
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;match&lt;&#x2F;span&gt;&lt;span&gt; reply {
+&lt;&#x2F;span&gt;&lt;span&gt;        Ok(r) | Err(r) =&amp;gt; r.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;encode&lt;&#x2F;span&gt;&lt;span&gt;(),
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; handle_get 检查GET命令在查询是否包含相应的key，在查询失败时，现实错误信息
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;pub fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handle_get&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;v&lt;&#x2F;span&gt;&lt;span&gt;: Vec&amp;lt;Value&amp;gt;) -&amp;gt; Result&amp;lt;Value, Value&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; v = v.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;iter&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;skip&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;).collect::&amp;lt;Vec&amp;lt;_&amp;gt;&amp;gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt; v.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;is_empty&lt;&#x2F;span&gt;&lt;span&gt;() {
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Err(Value::Error(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Expected 1 argument for GET command&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;()))
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; db_ref = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;RUDIS_DB&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;lock&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; reply = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if let &lt;&#x2F;span&gt;&lt;span&gt;Value::Bulk(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;ref&lt;&#x2F;span&gt;&lt;span&gt; s) = &amp;amp;v[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;] {
+&lt;&#x2F;span&gt;&lt;span&gt;        db_ref.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(s).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;map&lt;&#x2F;span&gt;&lt;span&gt;(|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;e&lt;&#x2F;span&gt;&lt;span&gt;|
+&lt;&#x2F;span&gt;&lt;span&gt;    Value::Bulk(e.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;())).&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap_or&lt;&#x2F;span&gt;&lt;span&gt;(Value::Null)
+&lt;&#x2F;span&gt;&lt;span&gt;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        Value::Null
+&lt;&#x2F;span&gt;&lt;span&gt;    };
+&lt;&#x2F;span&gt;&lt;span&gt;    Ok(reply)
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; handle_set 将&amp;amp;v[0]和&amp;amp;v[1]向匹配的键和值插入RUDIS_DB中
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;pub fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handle_set&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;v&lt;&#x2F;span&gt;&lt;span&gt;: Vec&amp;lt;Value&amp;gt;) -&amp;gt; Result&amp;lt;Value, Value&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let&lt;&#x2F;span&gt;&lt;span&gt; v = v.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;iter&lt;&#x2F;span&gt;&lt;span&gt;().&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;skip&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;).collect::&amp;lt;Vec&amp;lt;_&amp;gt;&amp;gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt; v.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;is_empty&lt;&#x2F;span&gt;&lt;span&gt;() || v.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;len&lt;&#x2F;span&gt;&lt;span&gt;() &amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;2 &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;Err(Value::Error(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Expected 2 arguments for SET command&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;()))
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;match &lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;v[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;], &amp;amp;v[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;]) {
+&lt;&#x2F;span&gt;&lt;span&gt;        (Value::Bulk(k), Value::Bulk(v)) =&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;            &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;let &lt;&#x2F;span&gt;&lt;span&gt;_ = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;RUDIS_DB
+&lt;&#x2F;span&gt;&lt;span&gt;                    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;lock&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;                    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;unwrap&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;                    .&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;insert&lt;&#x2F;span&gt;&lt;span&gt;(k.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;(), v.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;());
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;        _ =&amp;gt; unimplemented!(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;SET not implemented for {:?}&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;, v),
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    Ok(Value::String(&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Ok&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;to_string&lt;&#x2F;span&gt;&lt;span&gt;()))
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt; &lt;&#x2F;p&gt;
+&lt;h3 id=&quot;yun-xing-redis&quot;&gt;运行 Redis&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;root@8d75790f92f5:~&#x2F;rs&#x2F;rudis_sync&#x2F;src#&lt;&#x2F;span&gt;&lt;span&gt; cargo r &amp;amp;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;[1]&lt;&#x2F;span&gt;&lt;span&gt; 611
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;root@8d75790f92f5:~&#x2F;rs&#x2F;rudis_sync&#x2F;src#&lt;&#x2F;span&gt;&lt;span&gt;     Finished dev &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span&gt;unoptimized + debuginfo&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span&gt; target(s) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;in&lt;&#x2F;span&gt;&lt;span&gt; 0.06s
+&lt;&#x2F;span&gt;&lt;span&gt;     &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Running &lt;&#x2F;span&gt;&lt;span&gt;`&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;&#x2F;root&#x2F;rs&#x2F;rudis_sync&#x2F;target&#x2F;debug&#x2F;rudis_sync&lt;&#x2F;span&gt;&lt;span&gt;`
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;rudis_sync&lt;&#x2F;span&gt;&lt;span&gt; listening on 127.0.0.1:6378 ...
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt; &lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;连接 Rudis 服务器&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;pre data-lang=&quot;bash&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-bash &quot;&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;root@8d75790f92f5:~&#x2F;rs&#x2F;rudis_sync&#x2F;src#&lt;&#x2F;span&gt;&lt;span&gt; redis-cli&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt; -p&lt;&#x2F;span&gt;&lt;span&gt; 6378
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;New&lt;&#x2F;span&gt;&lt;span&gt; connection from: TcpStream { addr: 127.0.0.1:6378, peer: 127.0.0.1:59186, fd: 4 }
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;127.0.0.1:6378&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; set k v
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;New&lt;&#x2F;span&gt;&lt;span&gt; connection from: TcpStream { addr: 127.0.0.1:6378, peer: 127.0.0.1:59188, fd: 5 }
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;Ok
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;127.0.0.1:6378&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; get k
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;New&lt;&#x2F;span&gt;&lt;span&gt; connection from: TcpStream { addr: 127.0.0.1:6378, peer: 127.0.0.1:59190, fd: 4 }
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;v&lt;&#x2F;span&gt;&lt;span&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Rust异步网络IO</title>
+        <published>2022-01-03T21:08:00+08:00</published>
+        <updated>2022-01-03T21:08:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/rust-async-io/"/>
+        <id>/posts/rust-async-io/</id>
+        
+        <content type="html" xml:base="/posts/rust-async-io/">&lt;p&gt;同步 I&#x2F;O 模型可能是在给定时间内处理多个客户端的主要瓶颈，必须使用线程处理更多的客户端。为更好的方法来扩展，我们可以让套接字是非阻塞的，而不是应对套接字的阻塞性质。&lt;&#x2F;p&gt;
+&lt;p&gt;对于非阻塞套接字，其上的任何读取、写入或者操作都会立刻返回，无论操作成功与否。没有客户端需要等待请求完成，而是稍后同志请求成功与否。与线程相比，异步 I&#x2F;O 模型非常高效，但它增加了代码的复杂性。&lt;&#x2F;p&gt;
+&lt;p&gt;在基于 UNIX 的平台上，套接字上的轮询机制是通过 poll 和 select 系统调用完成的。这些调用在所有 UNIX 操作系统上都是兼容的，除此之外，Linux 还支持 epoll API。在 poll 和 select 对每个请求的套接字运行 for 循环的情况下，epoll 通过运行时 &lt;code&gt;O(1)&lt;&#x2F;code&gt;来同志用户的套接字事件。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;rust-zhong-de-yi-bu-chou-xiang&quot;&gt;Rust 中的异步抽象&lt;&#x2F;h2&gt;
+&lt;p&gt;Rust 提供了第三方软件包形式的便捷抽象，用于处理异步 I&#x2F;O。当处理非阻塞套接字和底层套接字轮询机制时，它为开发人员简化了大多数复杂状态机的处理。可供用户选择的两个底层抽象软件包是 &lt;code&gt;futures&lt;&#x2F;code&gt; 和 &lt;code&gt;mio&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;mio&quot;&gt;mio&lt;&#x2F;h3&gt;
+&lt;p&gt;mio 提供了底层机制的高度抽象，他可以为大多数 IO 复用 API 提供跨平台、高效的接口。mio 是一款底层软件包，它提供了一种为 socket 事件设置反应器的便捷方法。它和标准库类型相似，例如 &lt;code&gt;TcpStream&lt;&#x2F;code&gt;类型，不过默认情况下它是非阻塞的。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;futures&quot;&gt;futures&lt;&#x2F;h3&gt;
+&lt;p&gt;mio 杂耍式的套接字轮询状态机用起来并不是很方便。为了提供可供应用程序开发人员使用的高级 AP，提供了 future 软件包。&lt;&#x2F;p&gt;
+&lt;p&gt;futures 软件包提供了一个 &lt;code&gt;Future&lt;&#x2F;code&gt; 核心 trait，这是该软件包的核心组成部分。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;pub trait &lt;&#x2F;span&gt;&lt;span&gt;Future {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; Future将解析的值
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Item;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; 操作失败时的错误类型
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Error;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#65737e;&quot;&gt;&#x2F;&#x2F; poll 指定了应该如何完成future过程
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;poll&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;mut &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; Poll&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;Self::&lt;&#x2F;span&gt;&lt;span&gt;Item, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;Self::&lt;&#x2F;span&gt;&lt;span&gt;Error&amp;gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;Future&lt;&#x2F;code&gt; 值自身不能构建异步应用程序，你需要将某种反应器和事件循环来推进 future 完成。&lt;code&gt;poll&lt;&#x2F;code&gt; 函数指定了应该如何完成 future 过程。future 也可以由几件事情组合而成，从而一个接一个地链接起来。为了推进 future，我们需要一个反应器和事件循环实现，这是由 tokio 软件包提供。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;tokio&quot;&gt;tokio&lt;&#x2F;h3&gt;
+&lt;p&gt;tokio 整合了上述两种抽象，以及工作窃取调度程序、事件循环和计时器实现，它提供了一个运行时来驱动 future 完成。通过 tokio 框架，你可以生成多个 future 并让它们同时运行。&lt;&#x2F;p&gt;
+&lt;p&gt;tokio 软件包在技术上是一种运行时，由一个线程池、事件循环，基于 mio 的 I&#x2F;O 事件的反应器组成。&lt;&#x2F;p&gt;
+&lt;p&gt;当 future 没有任何数据要解析，或者在 &lt;code&gt;TcpStream&lt;&#x2F;code&gt; 客户端读取正在等待到达套接字的数据时，它将返回 NoReady 状态。但是在执行此操作时，还需要向反应器注册感兴趣的内容，以便能够再次获知服务器的任何新数据。&lt;&#x2F;p&gt;
+&lt;p&gt;当创建 future 时，无须执行任何其他操作。对于 future 定义的工作任务，必须提交给执行程序完成。在 tokio 中，任务是可以执行 future 的用户级线程。在 poll 方法的实现中，任务必须安排自己稍后执行轮询，以防相关工作停滞。为此，它必须将其任务处理程序传递给反应器线程。在 Linux 中，反应器是 mio 软件包。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;gou-jian-yi-bu-redis-fu-wu-qi&quot;&gt;构建异步 Redis 服务器&lt;&#x2F;h3&gt;
+&lt;p&gt;略&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Rust所有权</title>
+        <published>2021-12-06T21:00:00+08:00</published>
+        <updated>2021-12-06T21:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/ownership/"/>
+        <id>/posts/ownership/</id>
+        
+        <content type="html" xml:base="/posts/ownership/">&lt;p&gt;Rust 受现代 c++的启发，引入智能指针来管理堆内存。在 rust 中，所有权是系统性的概念，是 rust 语言的基础设施。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-1-tong-yong-gai-nian&quot;&gt;5.1 通用概念&lt;&#x2F;h2&gt;
+&lt;p&gt;编程语言中的值主要分成两类：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;值类型（Value）：数据直接存储在栈中的数据类型&lt;&#x2F;li&gt;
+&lt;li&gt;引用类型（Reference）：将数据存在堆中，而栈中值存放指向堆中数据的地址（指针）&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;为了更精确的对复杂类型进行描述，引入值语义和引用语义：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;值语义（Value Semantic）：按位复制以后，和原始对象无关&lt;&#x2F;li&gt;
+&lt;li&gt;引用语义（Reference Semantic）：也叫指针语义。一般是指将数据存储于对内存中，通过栈内存的指针来管理堆内存的数据，并且引用语义禁止按位复制。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;按位复制就是指栈复制，也叫浅复制，只复制栈上的数据。深复制就是对栈上和堆上的数据一起复制。&lt;&#x2F;p&gt;
+&lt;p&gt;对于实现 Copy trait 的类型，其 clone 方法必须是按位复制的。&lt;&#x2F;p&gt;
+&lt;p&gt;rust 通过 Copy 这个标记 trait 将类型按值语义和引用语义做了精准的分类，帮助编译期检测出潜在的内存安全问题。&lt;&#x2F;p&gt;
+&lt;p&gt;引用语义不能实现 copy，但是可以实现 Clone 的 clone 方法，以实现深度复制，在需要时可以显示调用。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-2-suo-you-quan-ji-zhi&quot;&gt;5.2 所有权机制&lt;&#x2F;h2&gt;
+&lt;p&gt;在所有权体制下，Rust 引入新的语义：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;复制（copy）：对应值语义。对于可以安全在栈上进行按位复制的类型，就只需要按位复制&lt;&#x2F;li&gt;
+&lt;li&gt;移动（move）：对应引用语义。对于在堆上存储的数据，无法安全地在栈上进行按位复制。如果堆上的数据不变，只需要在栈上移动指向堆内存的指针地址，不仅保证了内存安全，也拥有与栈复制同样的性能。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;一个值的所有权被转移给另外一个变量绑定的过程，就叫做所有权转移。&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;rust 中每个值都有一个所有者，更进一步说就是，rust 中分配的每块内存都有其所有者，所有者负责该内存的释放和读写权限，并且每次每个值只能有唯一的所有者，这就是 rust 的所有权机制（ownership）&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;suo-you-quan-de-te-dian&quot;&gt;所有权的特点&lt;&#x2F;h3&gt;
+&lt;p&gt;所有者拥有以下三种权限：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;控制资源（不仅仅是内存）的释放&lt;&#x2F;li&gt;
+&lt;li&gt;出借所有权，包括不可变（共享）的和可变（独占）的&lt;&#x2F;li&gt;
+&lt;li&gt;转移所有权&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;对于可以实现 Copy 的复制语义类型来说，所有权并未改变。对于复合类型来说，是复制还是移动，取决于其成员的类型。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;结构体：即使结构体的成员都是复制语义类型，但是 rust 也不会默认为其实现 Copy。需要手工添加 &lt;code&gt;#[derive(Debug, Copy, Clone)]&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;枚举：类似结构体&lt;&#x2F;li&gt;
+&lt;li&gt;元组：本身实现了 Copy，如果元素均为复制语义类型，则默认是按位复制，否则会执行移动语义。&lt;&#x2F;li&gt;
+&lt;li&gt;数组：类似元组&lt;&#x2F;li&gt;
+&lt;li&gt;Option 类型：类似元组&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;5-3-bang-ding-zuo-yong-yu-he-sheng-ming-zhou-qi&quot;&gt;5.3 绑定、作用域和生命周期&lt;&#x2F;h2&gt;
+&lt;p&gt;Rust 使用 let 关键字来生命变量。let 有 let banding 之意，let 声明的变量实际不是传统意义上的变量，而是指一种绑定语义。let 绑定了标识符和内存，而且使得标识符对那块内存拥有了所有权，因此被称为“绑定”。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-3-1-bu-ke-bian-yu-ke-bian&quot;&gt;5.3.1 不可变与可变&lt;&#x2F;h3&gt;
+&lt;p&gt;不可变（Immutable）的优点：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;多线程并发时，不可变的数据可以安全地在线程间共享&lt;&#x2F;li&gt;
+&lt;li&gt;函数的“副作用”可以得到控制&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Rust 声明的绑定默认不可变，如果需要修改，Rust 提供关键字 mut 来声明可变绑定。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-3-2-bang-ding-de-shi-jian-shu-xing-sheng-ming-zhou-qi&quot;&gt;5.3.2 绑定的时间属性-声明周期&lt;&#x2F;h3&gt;
+&lt;p&gt;变量绑定具有“时空”双重属性：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;空间属性：指标识符与内存空间进行了绑定&lt;&#x2F;li&gt;
+&lt;li&gt;时间属性：指绑定的时效性，也就是它的生存周期&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;除了 let 声明外，还有一些场景会创建新的词法作用域：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;花括号&lt;code&gt;{}&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;match 匹配&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;循环语句&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;if let 和 while let 块&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;函数&lt;&#x2F;p&gt;
+&lt;p&gt;函数参数是复制语义时按位复制，是移动语义时会转移所有权&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;闭包&lt;&#x2F;p&gt;
+&lt;p&gt;闭包会创建新的作用域，对于环境变量来说有一下三种捕获方式：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;对于复制语义类型，以不可变应用（&lt;code&gt;&amp;amp;T&lt;&#x2F;code&gt;）来捕获&lt;&#x2F;li&gt;
+&lt;li&gt;对于移动语义类型，执行移动语义转移所有权来捕获&lt;&#x2F;li&gt;
+&lt;li&gt;对于可变绑定，如果在闭包中包含对其进行修改的操作，则以可变引用(&lt;code&gt;&amp;amp;mut&lt;&#x2F;code&gt;)来捕获&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;5-4-suo-you-quan-jie-yong&quot;&gt;5.4 所有权借用&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;yin-yong-yu-jie-yong&quot;&gt;引用与借用&lt;&#x2F;h3&gt;
+&lt;p&gt;引用（Reference）是 Rust 提供的一种指针语义。应用是基于指针的实现，和指针的区别是：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;指针保存的是指向内存的地址&lt;&#x2F;li&gt;
+&lt;li&gt;引用可以看做某块内存的别名（alias），使用引用需要满足编译期的各种安全检查规则。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;引用分为不可变引用（使用&lt;code&gt;&amp;amp;&lt;&#x2F;code&gt;操作符）和可变引用(使用&lt;code&gt;&amp;amp;mut&lt;&#x2F;code&gt;操作符)。&lt;&#x2F;p&gt;
+&lt;p&gt;在所有权系统中，引用&lt;code&gt;&amp;amp;x&lt;&#x2F;code&gt;可称为 x 的借用（Borrowing），通过 &lt;code&gt;&amp;amp;&lt;&#x2F;code&gt; 操作符来完成所有权的租借。借用所有权不会引起变量所有权的转移。&lt;&#x2F;p&gt;
+&lt;p&gt;借用所有权会让所有者（owner）受到如下限制：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;在不可变借用期间，所有者不能修改资源，并且也不能再进行可变借用&lt;&#x2F;li&gt;
+&lt;li&gt;在可变借用期间，所有者不能访问资源，并且也不能再出借所有权&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;引用在离开作用域之时，就是归还所有权之时。&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;jie-yong-gui-ze&quot;&gt;借用规则&lt;&#x2F;h3&gt;
+&lt;p&gt;为了保证内存安全，借用必须遵循以下三个规则：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;规则一：借用的生命周期不能长于出借方（拥有所有权的对象）的生命周期&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;规则二：可变借用（引用）不能有别名（Alias，即其他不可变引用）,因为可变借用具有独占性&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;规则三：不可变借用（引用）不能再次出借为可变借用&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;规则一是为了防止出现悬垂指针，规则二和规则三总结为一条核心原则：&lt;strong&gt;共享不可变，可变不共享&lt;&#x2F;strong&gt;。规则二和规则三描述的不可变借用和可变借用就相当于内存的读写锁，同一时刻，只能拥有一个写锁，或者多个读锁，不能同时拥有。&lt;&#x2F;p&gt;
+&lt;p&gt;Rust 的借用检查带来如下好处：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;不可变借用保证了没有任何指针可以修改值的内存，便于将值存储在寄存器中&lt;&#x2F;li&gt;
+&lt;li&gt;可变借用保证了在写的时候没有任何指针可以读取值的内存，避免了脏读&lt;&#x2F;li&gt;
+&lt;li&gt;不可变借用保证了内存不会在读取之后被写入新数据&lt;&#x2F;li&gt;
+&lt;li&gt;保证了不可变借用和可变借用不相互依赖，从而可以对读写操作进行自由移动和重新排序&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;解引用会获得所有权。&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-5-sheng-ming-zhou-qi-can-shu&quot;&gt;5.5 生命周期参数&lt;&#x2F;h2&gt;
+&lt;p&gt;跨函数使用借用，需要显式地对借用参数或返回值使用生命周期参数进行标注。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-5-1-xian-shi-sheng-ming-zhou-qi-can-shu&quot;&gt;5.5.1 显式生命周期参数&lt;&#x2F;h3&gt;
+&lt;p&gt;生命周期参数必须以单引号开头，参数名通常都是小写字母，比如 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 。生命周期参数位于引用符号 &amp;amp; 后面，并使用空格来分割生命周期参数和类型。如：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a i32&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a mut i32&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;标注生命周期参数并不能改变任何引用的生命周期长短，它只用于编译器的借用检查，来防止悬垂指针。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;han-shu-qian-ming-zhong-de-sheng-ming-zhou-qi-can-shu&quot;&gt;函数签名中的生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;函数签名中的生命周期参数使用如下标注语法:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;foo&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;s&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;t&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;函数名后面的 &lt;code&gt;&amp;lt;&#x27;a&amp;gt;&lt;&#x2F;code&gt; 为生命周期参数的声明，与范型参数类似，必须先声明才能使用。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;输入生命周期（input lifetime）：函数或者参数的生命周期&lt;&#x2F;li&gt;
+&lt;li&gt;输出生命周期（output lifetime）：返回值的生命周期&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;函数签名的生命周期参数有这样的限制条件：&lt;strong&gt;输出（借用方）的生命周期长度必须不长于输入（出借方）的生命周期长度。&lt;&#x2F;strong&gt;（遵循借用规则一）&lt;&#x2F;p&gt;
+&lt;p&gt;禁止在没有任何输入参数的情况下返回引用。因为明显会造成悬垂指针。&lt;&#x2F;p&gt;
+&lt;p&gt;从函数中返回（输出）一个引用，其生命周期参数必须与函数的参数（输入）相匹配，否则，标记生命周期参数毫无意义。&lt;&#x2F;p&gt;
+&lt;p&gt;函数生命中的 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 可以看作是一个生命周期范型参数，输入引用和输出引用都标记为 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 意味着输出引用（借用方）的生命周期不长于输入引用（出借方）的生命周期。&lt;&#x2F;p&gt;
+&lt;p&gt;对于多个输入参数的情况，也可以标注不同的生命周期参数，如:&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;the_longest&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;b&lt;&#x2F;span&gt;&lt;span&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;s&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;t&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;b str&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;&#x27;b: &#x27;a&lt;&#x2F;code&gt; 的意思是范型生命周期参数 &lt;code&gt;&#x27;b&lt;&#x2F;code&gt; 的存活时间长于范型生命周期参数 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; （即 &lt;code&gt;&#x27;b&lt;&#x2F;code&gt; outlive &lt;code&gt;&#x27;b&lt;&#x2F;code&gt;）。&lt;&#x2F;p&gt;
+&lt;p&gt;生命周期参数的目的：生命周期参数是为了帮助借用检查器验证非法借用。函数间传入和返回的借用必须相关联，并且返回的借用生命周期必须比出借方的生命周期短。&lt;&#x2F;p&gt;
+&lt;p&gt;生命周期参数是为了帮助借用检查器验证合法的引用，消除悬垂指针。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;jie-gou-ti-ding-yi-zhong-de-sheng-ming-zhou-qi-can-shu&quot;&gt;结构体定义中的生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;结构体在含有引用类型成员的时候也需要标注生命周期参数。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;Foo&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;part&lt;&#x2F;span&gt;&lt;span&gt;: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;,
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这里的生命周期参数标记，实际是和编译器约定了一个规则：&lt;strong&gt;结构体实例的生命周期应短于或者等于任意一个成员的生命周期&lt;&#x2F;strong&gt;。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;fang-fa-ding-yi-zhong-de-sheng-ming-zhou-qi-can-shu&quot;&gt;方法定义中的生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;需要在 impl 关键字之后申明生命周期参数：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; Foo&amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a&lt;&#x2F;span&gt;&lt;span&gt;&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    fun &lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span&gt;(s: &amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;&amp;#39;a str&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;Self &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;        ......
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    ......
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;枚举和结构体对生命周期参数的处理方式是一样的。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;jing-tai-sheng-ming-zhou-qi-can-shu&quot;&gt;静态生命周期参数&lt;&#x2F;h4&gt;
+&lt;p&gt;字符串字面量是全局静态类型，它的数据和程序代码一起存储于可执行文件的数据段中，其地址在编译器是已知的，无法更改。&lt;&#x2F;p&gt;
+&lt;p&gt;在 rust 2018 版本中，使用 const 和 static 定义字符串字面量时，都可以省掉 &#x27;static 静态生命周期参数。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-5-2-sheng-lue-sheng-ming-zhou-qi-can-shu&quot;&gt;5.5.2 省略生命周期参数&lt;&#x2F;h3&gt;
+&lt;p&gt;Rust 针对某些场景确定了一些常见的模式，将其编码到 Rust 编译器中，以便编译器可以自动补齐函数签名中的生命周期参数，这样就可以省略生命周期参数。&lt;&#x2F;p&gt;
+&lt;p&gt;被硬编码进编译器的模式被成为生命周期省略规则（lifetime Elision Rule），一共包含三条规则：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;每个输入位置上省略的生命周期都将成为一个不同的生命周期参数&lt;&#x2F;li&gt;
+&lt;li&gt;如果只有一个输入生命周期的位置（不管是否省略），则该生命周期都将分配给输出生命周期&lt;&#x2F;li&gt;
+&lt;li&gt;如果存在多个输入生命周期的位置，但是其中包含找 &amp;amp;self 或者 &amp;amp;mut self，则 self 的生命周期将被分配给输出生命周期。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;5-5-3-sheng-ming-zhou-qi-xian-ding&quot;&gt;5.5.3 生命周期限定&lt;&#x2F;h3&gt;
+&lt;p&gt;生命周期参数可以像 trait 那样作为范型的限定，有以下两种形式：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;T: &#x27;a&lt;&#x2F;code&gt; : 表示 T 类型中的任何引用都要&quot;活得&quot; 和 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 一样长&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;T: Trait + &#x27;a&lt;&#x2F;code&gt; : 表示 T 类型必须实现 Trait 这个 trait，并且 T 类型中任何引用都要&quot;活得&quot; 和 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt; 一样长&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;5-5-4-trait-dui-xiang-de-sheng-ming-zhou-qi&quot;&gt;5.5.4 trait 对象的生命周期&lt;&#x2F;h3&gt;
+&lt;p&gt;trait 对象和生命周期有默认遵循的规则：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;trait 对象的生命周期默认是 &lt;code&gt;&#x27;static&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;如果实现 trait 的类型包含 &lt;code&gt;&amp;amp;&#x27;a X&lt;&#x2F;code&gt; 或者 &lt;code&gt;&amp;amp;&#x27;a mut X&lt;&#x2F;code&gt;，则默认生命周期就是 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;如果实现 trait 的类型只有 &lt;code&gt;T: &#x27;a&lt;&#x2F;code&gt;，则默认生命周期就是 &lt;code&gt;&#x27;a&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;如果实现 trait 的类型包含多个类似 &lt;code&gt;T: &#x27;a&lt;&#x2F;code&gt; 的从句，则生命周期需要明确指定&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;5-6-zhi-neng-zhi-zhen-yu-suo-you-quan&quot;&gt;5.6 智能指针与所有权&lt;&#x2F;h2&gt;
+&lt;p&gt;智能指针和普通引用的区别之一就是所有权的不同：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;智能指针拥有资源的所有权&lt;&#x2F;li&gt;
+&lt;li&gt;普通引用只是对所有权的借用&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 智能指针可以使用解引用操作符进行解引用。&lt;&#x2F;p&gt;
+&lt;p&gt;之所以可以进行解引用，是因为 &lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 实现了 deref 方法：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;rust&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-rust &quot;&gt;&lt;code class=&quot;language-rust&quot; data-lang=&quot;rust&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;impl&lt;&#x2F;span&gt;&lt;span&gt;&amp;lt;T: &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#bf616a;color:#2b303b;&quot;&gt;?&lt;&#x2F;span&gt;&lt;span&gt;Sized&amp;gt; Deref for Box&amp;lt;T&amp;gt; {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;type &lt;&#x2F;span&gt;&lt;span&gt;Target = T;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;deref&lt;&#x2F;span&gt;&lt;span&gt;(&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span&gt;) -&amp;gt; &amp;amp;T {
+&lt;&#x2F;span&gt;&lt;span&gt;        &amp;amp;**&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;self
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;对于 &lt;code&gt;Box&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 类型来说，如果包含的类型 T 属于复制语义，则执行按位复制；如果属于移动语义，则移动所有权。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-6-1-gong-xiang-suo-you-quan-rc-t-he-weak-t&quot;&gt;5.6.1 共享所有权 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;Weak&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Rust 中提供了 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 智能指针来支持引用计数。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 可以将多个所有权共享给多个变量。 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 主要用于系统共享堆上分配的数据可以供程序的多个部分读取的场景，并且主要确保共享的资源的析构函数都能被调用。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 是单线程引用计数指针，不是线程安全的类型。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;强引用： 通过 clone 方法共享的引用所有权被成为强引用&lt;&#x2F;li&gt;
+&lt;li&gt;弱引用： 通过 downgrade 方法创建的 &lt;code&gt;Weak&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 智能指针属于 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 的另一种版本，它共享的指针没有所有权，所以被成为弱引用。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;5-6-2-nei-bu-ke-bian-xing-cell-t-he-refcell-t&quot;&gt;5.6.2 内部可变性 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Rust 中的可变或不可变主要是针对一个变量绑定而言，比如对于结构体来说，可变或者不可变只能对其实例进行设置，而不能设置单个成员的可变性。但是在实际的开发中，某个字段是可变而其他字段不可变的情况是确实存在的。&lt;&#x2F;p&gt;
+&lt;p&gt;Rust 提供&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 来应对这种情况，他们本事上不属于智能指针，只是提供内部可变性（Interior Mutability）的容器。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;cell-t&quot;&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;内部可变性实际上是 Rust 中的一种设计模式。&lt;&#x2F;p&gt;
+&lt;p&gt;内部可变性容器是对 Struct 的一种封装，表面不可变，但内部可以通过某个方法来改变里面的值。&lt;&#x2F;p&gt;
+&lt;p&gt;使用 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 内部可变容器确实方便了编程，它提供的 set&#x2F;get 方法像极了 oop 语言中常见的 getter&#x2F;setter 方法，封装了对象属性的获取和设置方法。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 通过对外暴露的 get&#x2F;set 方法实现了对内部值的修改，而其本身却是不可变的。所以，实际上 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 包裹的 T 本身合法的避开了借用检查。&lt;&#x2F;p&gt;
+&lt;p&gt;对于包裹在 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 中的类型 T ，只有实现了 Copy 的类型 T，才可以使用 get 方法获取包裹的值，因为 get 方法返回的是对内部值的复制。但是任何类型 T 都可以使用 set 方法修改其包裹的值。&lt;&#x2F;p&gt;
+&lt;p&gt;对于实现了 Copy 的 T，可以任意读取；对于没有实现 Copy 的类型 T，则提供了 get_mut 方法来返回可变借用，依然遵循 Rust 的借用检查规则。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 内部每次 get&#x2F;set 都会执行一次按位复制。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;refcell-t&quot;&gt;&lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;对于没有实现 Copy 的类型，使用 &lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 有许多不变。 Rust 提供的 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 适用的范围更广，对类型 T 并没有 Copy 的限制。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 提供 borrow&#x2F;borrow_mut 方法，对应 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 的 get&#x2F;set 方法。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 维护一个运行时借用检查器，有运行时开销。&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;xiao-jie&quot;&gt;小结&lt;&#x2F;h4&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 使用最多的场景就是配合只读引用来使用，比如 &lt;code&gt;&amp;amp;T&lt;&#x2F;code&gt; 或者 &lt;code&gt;Rc&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 之间的区别可以总结为：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 使用 set&#x2F;get 直接操作包裹的值，而 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 通过 borrow&#x2F;borrow_mut 返回包装过的引用 &lt;code&gt;Ref&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 和 &lt;code&gt;RefMut&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 来操作包裹的值。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 一般适合复制语义类型（实现了 Copy）， &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 一般适合移动语义类型（未实现 Copy）&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Cell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 无运行时开销，而且永远不会在运行时引发 panic 错误。 &lt;code&gt;RefCell&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 需要在运行时执行借用检查，有运行时开销。而且一旦发现违反借用规则的情况，则会引发看线程 panic 。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;5-6-3-xie-shi-fu-zhi-cow-t&quot;&gt;5.6.3 写时复制&lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;写时复制(Copy On Write &#x2F; Cow) 是一种优化策略。&lt;&#x2F;p&gt;
+&lt;p&gt;Rust 中的 &lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 是一个枚举体的智能指针，包括两个可选值：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Borrowed：用于包裹引用&lt;&#x2F;li&gt;
+&lt;li&gt;Owned：用于包裹所有者&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 提供的功能是： &lt;strong&gt;以不可变的方式访问借用内容，以及在需要可变借用或所有权的时候再克隆一份数据&lt;&#x2F;strong&gt;。&lt;code&gt;Cow&amp;lt;T&amp;gt;&lt;&#x2F;code&gt; 旨在减少复制操作，提供性能，一般用在读多写少的场景。&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

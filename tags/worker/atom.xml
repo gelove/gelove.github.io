@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>艾伦的空间 - Worker</title>
+    <subtitle>技术闲谈</subtitle>
+    <link rel="self" type="application/atom+xml" href="/tags/worker/atom.xml"/>
+    <link rel="alternate" type="text/html" href="/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2024-12-18T14:00:00+08:00</updated>
+    <id>/tags/worker/atom.xml</id>
+    <entry xml:lang="en">
+        <title>通过 Cloudflare Worker 部署 Telegram Bot</title>
+        <published>2024-12-18T14:00:00+08:00</published>
+        <updated>2024-12-18T14:00:00+08:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="/posts/cloudflare-worker-deploy-telegram-bot/"/>
+        <id>/posts/cloudflare-worker-deploy-telegram-bot/</id>
+        
+        <content type="html" xml:base="/posts/cloudflare-worker-deploy-telegram-bot/">&lt;h2 id=&quot;1-chuang-jian-telegram-bot&quot;&gt;1 创建 Telegram Bot&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;在 Telegram 中搜索 “@BotFather”。&lt;&#x2F;li&gt;
+&lt;li&gt;向 BotFather 发送 &lt;code&gt;&#x2F;newbot&lt;&#x2F;code&gt; 命令。&lt;&#x2F;li&gt;
+&lt;li&gt;按照提示设置 bot 的名称和用户名。&lt;&#x2F;li&gt;
+&lt;li&gt;完成后，您将收到一个 API Token，请妥善保存。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;2-tong-guo-cloudflare-worker-bu-shu-bot&quot;&gt;2 通过 Cloudflare Worker 部署 Bot&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;2-1-dai-ma-shi-li&quot;&gt;2.1 代码示例&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;addEventListener&lt;&#x2F;span&gt;&lt;span&gt;(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;fetch&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;event &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  event.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;respondWith&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handleRequest&lt;&#x2F;span&gt;&lt;span&gt;(event.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;));
+&lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;async function &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;handleRequest&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;.method === &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;POST&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;try &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;await &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;request&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;json&lt;&#x2F;span&gt;&lt;span&gt;();
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ebcb8b;&quot;&gt;console&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;log&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span&gt;);
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;globalThis&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TELE_BOT_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;url &lt;&#x2F;span&gt;&lt;span&gt;= `&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;https:&#x2F;&#x2F;api.telegram.org&#x2F;bot${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;}&#x2F;sendMessage&lt;&#x2F;span&gt;&lt;span&gt;`;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;response &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;await &lt;&#x2F;span&gt;&lt;span style=&quot;color:#8fa1b3;&quot;&gt;fetch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;url&lt;&#x2F;span&gt;&lt;span&gt;, {
+&lt;&#x2F;span&gt;&lt;span&gt;        method: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;POST&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;,
+&lt;&#x2F;span&gt;&lt;span&gt;        headers: { &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Content-Type&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;: &amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;application&#x2F;json&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39; },
+&lt;&#x2F;span&gt;&lt;span&gt;        body: JSON.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#96b5b4;&quot;&gt;stringify&lt;&#x2F;span&gt;&lt;span&gt;({
+&lt;&#x2F;span&gt;&lt;span&gt;          chat_id: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;message&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;chat&lt;&#x2F;span&gt;&lt;span&gt;.id,
+&lt;&#x2F;span&gt;&lt;span&gt;          text: `&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;You said: ${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;body&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;message&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;.text}&lt;&#x2F;span&gt;&lt;span&gt;`,
+&lt;&#x2F;span&gt;&lt;span&gt;        }),
+&lt;&#x2F;span&gt;&lt;span&gt;      });
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;OK&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;200 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;    } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;catch &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;error&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Error processing request&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;500 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;new Response(&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#a3be8c;&quot;&gt;Invalid request&lt;&#x2F;span&gt;&lt;span&gt;&amp;#39;, { status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d08770;&quot;&gt;400 &lt;&#x2F;span&gt;&lt;span&gt;});
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;2-2-bu-shu-bu-zou&quot;&gt;2.2 部署步骤&lt;&#x2F;h3&gt;
+&lt;ol&gt;
+&lt;li&gt;登录 Cloudflare 账户，创建新的 Worker。&lt;&#x2F;li&gt;
+&lt;li&gt;将上述代码粘贴到 Worker 编辑器中。&lt;&#x2F;li&gt;
+&lt;li&gt;在 Worker 的设置中添加环境变量 &lt;code&gt;TELE_BOT_TOKEN&lt;&#x2F;code&gt;，值为您的 Telegram Bot API Token。&lt;&#x2F;li&gt;
+&lt;li&gt;部署 Worker。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;2-3-she-zhi-webhook&quot;&gt;2.3 设置 Webhook&lt;&#x2F;h3&gt;
+&lt;p&gt;部署完成后，需要设置 Webhook 以便 Telegram 服务器能够向您的 Worker 发送更新。&lt;&#x2F;p&gt;
+&lt;p&gt;使用以下命令设置 Webhook（请在打开代理或国外服务器上运行，以避免访问不了的错误）：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;export TELE_BOT_TOKEN=your-bot-token
+&lt;&#x2F;span&gt;&lt;span&gt;curl -F &amp;quot;url=https:&#x2F;&#x2F;your-worker-subdomain.workers.dev&amp;quot; https:&#x2F;&#x2F;api.telegram.org&#x2F;bot$TELE_BOT_TOKEN&#x2F;setWebhook
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;替换 &lt;code&gt;your-worker-subdomain&lt;&#x2F;code&gt; 为实际值。&lt;&#x2F;p&gt;
+&lt;p&gt;验证 Webhook 设置：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;shell&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-shell &quot;&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span&gt;curl https:&#x2F;&#x2F;api.telegram.org&#x2F;bot$TELE_BOT_TOKEN&#x2F;getWebhookInfo
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;3-cloudflare-worker-shi-yong-zhu-yi-shi-xiang&quot;&gt;3 Cloudflare Worker 使用注意事项&lt;&#x2F;h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;环境变量访问&lt;&#x2F;strong&gt;：使用 &lt;code&gt;globalThis.&lt;&#x2F;code&gt; 前缀访问环境变量，例如：&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;pre data-lang=&quot;js&quot; style=&quot;background-color:#2b303b;color:#c0c5ce;&quot; class=&quot;language-js &quot;&gt;&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#b48ead;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TOKEN &lt;&#x2F;span&gt;&lt;span&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;globalThis&lt;&#x2F;span&gt;&lt;span&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#bf616a;&quot;&gt;TELE_BOT_TOKEN&lt;&#x2F;span&gt;&lt;span&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;ol start=&quot;2&quot;&gt;
+&lt;li&gt;&lt;strong&gt;代码保存&lt;&#x2F;strong&gt;：有时保存可能不会立即生效，需要重新进入并粘贴代码。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;调试&lt;&#x2F;strong&gt;：可以切换到 HTTP 功能，输入测试数据进行调试。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;部署&lt;&#x2F;strong&gt;：只有在预览模式下才能点击&quot;部署&quot;按钮。HTTP 模式下无法部署。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;通过以上步骤，您就可以成功创建并部署一个基于 Cloudflare Worker 的 Telegram Bot。&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
